@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,7 +9,7 @@ body {
 
 @layer base {
   :root {
-    --background: 208 100% 97%; /* Light Desaturated Blue */
+    --background: 208 100% 97%; /* Light Desaturated Blue (#F0F8FF) */
     --foreground: 215 25% 27%; /* Dark Grayish Blue */
 
     --card: 0 0% 100%; /* White */
@@ -20,7 +21,7 @@ body {
     --primary: 207 66% 50%; /* Darker Soft Blue for better contrast on elements */
     --primary-foreground: 0 0% 100%; /* White */
     
-    /* Custom variable for the requested soft blue color if needed for specific text/icons */
+    /* Custom variable for the requested soft blue color (#7BB4E3) */
     --soft-blue: 207 66% 68%;
 
     --secondary: 208 80% 92%; 
@@ -29,7 +30,7 @@ body {
     --muted: 208 60% 90%;
     --muted-foreground: 215 20% 45%;
 
-    --accent: 94 51% 75%; /* Light Green */
+    --accent: 94 51% 75%; /* Light Green (#BCE29E) */
     --accent-foreground: 94 40% 20%; /* Dark Green */
 
     --destructive: 0 84.2% 60.2%;
@@ -37,7 +38,7 @@ body {
 
     --border: 208 30% 85%;
     --input: 0 0% 100%; /* White inputs */
-    --ring: 207 66% 58%; /* Primary color for focus ring */
+    --ring: 207 66% 58%; /* Primary color for focus ring, derived from --primary */
 
     --radius: 0.5rem;
 
@@ -69,7 +70,7 @@ body {
     --popover: 215 28% 17%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 207 66% 68%; /* Soft Blue - stands out well on dark */
+    --primary: 207 66% 68%; /* Soft Blue (#7BB4E3) - stands out well on dark */
     --primary-foreground: 207 50% 15%; /* Very Dark Blue for text on Soft Blue */
     
     --soft-blue: 207 66% 68%;
@@ -80,7 +81,7 @@ body {
     --muted: 215 28% 25%;
     --muted-foreground: 210 40% 60%;
 
-    --accent: 94 45% 55%; /* Darker Light Green for dark mode */
+    --accent: 94 45% 55%; /* Darker Light Green for dark mode, derived from #BCE29E */
     --accent-foreground: 94 100% 95%; /* Very Light Green/White */
 
     --destructive: 0 62.8% 30.6%;
@@ -119,3 +120,4 @@ body {
     -moz-osx-font-smoothing: grayscale;
   }
 }
+

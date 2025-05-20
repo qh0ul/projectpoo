@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -22,20 +23,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Patient, PatientFormData, BloodGroup } from "@/lib/types";
+import type { Patient, PatientFormData, BloodGroup, BloodGroupSelectOption } from "@/lib/types";
 import { BLOOD_GROUPS_OPTIONS } from "@/constants";
 import { CalendarIcon, Save, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale'; // Import French locale
+import { fr } from 'date-fns/locale';
 
 const PatientFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom de famille doit comporter au moins 2 caractères." }),
   prenom: z.string().min(2, { message: "Le prénom doit comporter au moins 2 caractères." }),
-  dateDeNaissance: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Format de date invalide."}),
-  groupeSanguin: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', '']).optional(),
+  dateDeNaissance: z.string().refine((val) => !isNaN(Date.parse(val)) && val.length > 0, { message: "Une date de naissance valide est requise."}),
+  groupeSanguin: z.custom<BloodGroupSelectOption>().optional(),
   notes: z.string().optional(),
 });
 
@@ -53,14 +54,14 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
         nom: patient.nom,
         prenom: patient.prenom,
         dateDeNaissance: patient.dateDeNaissance ? format(parseISO(patient.dateDeNaissance), 'yyyy-MM-dd') : '',
-        groupeSanguin: patient.groupeSanguin,
+        groupeSanguin: patient.groupeSanguin || undefined, // Use undefined for empty to show placeholder
         notes: patient.notes || '',
       }
     : {
         nom: "",
         prenom: "",
         dateDeNaissance: "",
-        groupeSanguin: "",
+        groupeSanguin: undefined, // Use undefined for empty to show placeholder
         notes: "",
       };
 
@@ -72,8 +73,8 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
   const handleFormSubmit = async (values: PatientFormValues) => {
     const dataToSubmit: PatientFormData = {
       ...values,
-      dateDeNaissance: values.dateDeNaissance,
-      groupeSanguin: values.groupeSanguin as BloodGroup || '',
+      dateDeNaissance: values.dateDeNaissance, // Already in yyyy-MM-dd
+      groupeSanguin: (values.groupeSanguin as BloodGroup) || '', // Ensure it's BloodGroup or empty string
     };
     await onSubmit(dataToSubmit);
   };
@@ -142,7 +143,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
-                      locale={fr} // Add locale to Calendar
+                      locale={fr}
                     />
                   </PopoverContent>
                 </Popover>
@@ -156,7 +157,11 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Groupe Sanguin</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select 
+                    onValueChange={field.onChange} 
+                    value={field.value || ""} // Ensure value is string for Select
+                    defaultValue={field.value || ""}
+                >
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner le groupe sanguin" />
@@ -207,3 +212,4 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
     </Form>
   );
 }
+

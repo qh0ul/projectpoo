@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@/components/ui/input"; // Input is not directly used, but Popover/Calendar might need it indirectly
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { PlusCircle, History, Trash2, Loader2, CalendarIcon } from "lucide-react";
@@ -12,7 +13,7 @@ import type { MedicalHistoryEntry } from "@/lib/types";
 import { addMedicalHistoryAction, removeMedicalHistoryAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale'; // Import French locale
+import { fr } from 'date-fns/locale';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -44,9 +45,8 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
     const result = await addMedicalHistoryAction(patientId, formData);
     setIsSubmitting(false);
 
-    if (result?.success) {
-      // Manually add for now, ideally re-fetch/revalidate or use returned entry
-      const newEntry = { id: result.newEntryId || `temp-${Date.now()}`, date: newEntryDate, description: newEntryDescription };
+    if (result?.success && result.newEntryId) {
+      const newEntry = { id: result.newEntryId, date: newEntryDate, description: newEntryDescription };
       setHistory(prev => [newEntry, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setNewEntryDate(format(new Date(), 'yyyy-MM-dd'));
       setNewEntryDescription("");
@@ -59,7 +59,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
 
   const handleRemoveEntry = async (entryId: string) => {
     const originalHistory = [...history];
-    setHistory(prev => prev.filter(h => h.id !== entryId)); // Optimistic update
+    setHistory(prev => prev.filter(h => h.id !== entryId)); 
     
     setIsSubmitting(true);
     const result = await removeMedicalHistoryAction(patientId, entryId);
@@ -68,7 +68,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
     if (result?.success) {
         toast({ title: "Succès", description: result.message || "Entrée d'antécédent médical supprimée."});
     } else {
-        setHistory(originalHistory); // Revert on failure
+        setHistory(originalHistory); 
         toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de la suppression de l'entrée."});
     }
   };
@@ -117,7 +117,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
                       onSelect={(date) => setNewEntryDate(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => date > new Date()}
                       initialFocus
-                      locale={fr} // Add locale to Calendar
+                      locale={fr}
                     />
                   </PopoverContent>
                 </Popover>
@@ -180,3 +180,4 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
     </Card>
   );
 }
+

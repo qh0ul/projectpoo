@@ -1,11 +1,11 @@
+
 import { getPatientById, calculateAge } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { APP_NAME } from "@/constants";
 import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale'; // Import French locale
-import { Metadata } from "next";
+import { fr } from 'date-fns/locale';
+import type { Metadata } from "next"; // Corrected import type
 
-// This layout will ensure no other UI elements are printed
 function PrintLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
@@ -135,15 +135,7 @@ export default async function PrintPatientPage({ params }: { params: { id: strin
           <p>Aucun antécédent médical enregistré.</p>
         )}
       </div>
-      
-      {/* You could add a placeholder or instruction for AI summary if it's printed */}
-      {/* 
-      <div className="section">
-        <h2>Résumé de Santé</h2>
-        <p><i>Le résumé de santé généré par IA peut être consulté dans l'application.</i></p>
-      </div>
-      */}
-
     </PrintLayout>
   );
 }
+

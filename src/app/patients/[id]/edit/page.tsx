@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useEffect } from "react"; // useEffect was missing from original template
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, notFound } from "next/navigation";
 import { PatientForm } from "@/components/patient/patient-form";
@@ -19,7 +20,6 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Changed useState to useEffect for data fetching as per React best practices
   useEffect(() => {
     async function fetchPatient() {
       setIsLoading(true);
@@ -65,7 +65,6 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
   }
 
   if (!patient) {
-    // Should be caught by notFound in effect, but as a fallback
     return <p>Patient non trouvé.</p>;
   }
 
@@ -91,3 +90,4 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
     </div>
   );
 }
+

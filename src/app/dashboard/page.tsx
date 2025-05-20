@@ -1,8 +1,9 @@
+
 import Link from "next/link";
 import { PlusCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { getPatients, calculateAge } from "@/lib/data"; // Assuming getPatients is async
+import { getPatients, calculateAge } from "@/lib/data"; 
 import type { Patient } from "@/lib/types";
 import { APP_NAME } from "@/constants";
 import Image from "next/image";
@@ -54,7 +55,7 @@ export default async function DashboardPage() {
                   <CardTitle className="text-xl">{patient.prenom} {patient.nom}</CardTitle>
                   <Image 
                     data-ai-hint="profile avatar"
-                    src={`https://placehold.co/40x40.png`} // Placeholder for patient avatar
+                    src={`https://placehold.co/40x40.png`} 
                     alt={`${patient.prenom} ${patient.nom}`}
                     width={40}
                     height={40}
@@ -90,3 +91,4 @@ export default async function DashboardPage() {
     </div>
   );
 }
+

@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { Activity } from "lucide-react";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Button was not used, but can be kept for future use
 import { APP_NAME } from "@/constants";
 import { useState, useEffect } from "react";
 
@@ -26,14 +26,8 @@ export function AppHeader() {
             <span className="font-bold text-lg">{APP_NAME}</span>
           </Link>
         </div>
-        
-        {/* Placeholder for User Menu or other actions */}
-        {/* <div>
-          <Button variant="ghost" size="icon">
-            <UserCircle className="h-5 w-5" />
-          </Button>
-        </div> */}
       </div>
     </header>
   );
 }
+

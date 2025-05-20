@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -35,10 +36,8 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
     const result = await addAllergyAction(patientId, formData);
     setIsSubmitting(false);
 
-    if (result?.success) {
-      // Re-fetch or update state based on actual new allergy from result if available
-      // For now, optimistic update. Ideally, result.newAllergyId or similar would be used
-      setAllergies(prev => [...prev, { id: result.newAllergyId || `temp-${Date.now()}`, description: newAllergy }]);
+    if (result?.success && result.newAllergyId) {
+      setAllergies(prev => [...prev, { id: result.newAllergyId!, description: newAllergy }]);
       setNewAllergy("");
       setIsDialogOpen(false);
       toast({ title: "Succès", description: result.message || "Allergie ajoutée." });
@@ -48,19 +47,17 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
   };
 
   const handleRemoveAllergy = async (allergyId: string) => {
-    // Consider adding a per-item loading state if multiple removals can happen quickly
-    // For now, using global isSubmitting for simplicity
     const originalAllergies = [...allergies];
-    setAllergies(prev => prev.filter(a => a.id !== allergyId)); // Optimistic update
+    setAllergies(prev => prev.filter(a => a.id !== allergyId)); 
     
-    setIsSubmitting(true);
+    setIsSubmitting(true); // Consider per-item loading for multiple quick removals
     const result = await removeAllergyAction(patientId, allergyId);
     setIsSubmitting(false);
 
     if (result?.success) {
         toast({ title: "Succès", description: result.message || "Allergie supprimée."});
     } else {
-        setAllergies(originalAllergies); // Revert on failure
+        setAllergies(originalAllergies); 
         toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de la suppression de l'allergie."});
     }
   };
@@ -140,3 +137,4 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
     </Card>
   );
 }
+

@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPatientById, calculateAge } from "@/lib/data";
@@ -6,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, Siren, History, StickyNote, Sparkles } from "lucide-react";
 import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale'; // Import French locale
+import { fr } from 'date-fns/locale';
 import { AllergiesSection } from "@/components/patient/allergies-section";
 import { MedicalHistorySection } from "@/components/patient/medical-history-section";
 import { HealthSummaryGenerator } from "@/components/patient/health-summary-generator";
@@ -62,7 +63,6 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column / Main Info */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-start justify-between">
@@ -108,7 +108,6 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           <MedicalHistorySection patientId={patient.id} medicalHistory={patient.antecedents} />
         </div>
 
-        {/* Right Column / AI Summary */}
         <div className="lg:col-span-1 space-y-6">
           <Card className="shadow-lg">
             <CardHeader>
@@ -135,7 +134,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
               </CardDescription>
             </CardHeader>
             <CardContent className="h-48 flex items-center justify-center">
-               <Image src="https://placehold.co/300x150.png" alt="Graphique des constantes (Placeholder)" width={300} height={150} />
+               <Image src="https://placehold.co/300x150.png" alt="Graphique des constantes (Placeholder)" width={300} height={150} data-ai-hint="medical graph" />
             </CardContent>
           </Card>
         </div>
@@ -143,3 +142,4 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
     </div>
   );
 }
+

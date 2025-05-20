@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
@@ -19,7 +20,6 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description: "Une application de dossier médical numérique.",
-  // Add more metadata like icons, open graph, etc.
 };
 
 export default function RootLayout({
@@ -53,3 +53,4 @@ export default function RootLayout({
     </html>
   );
 }
+

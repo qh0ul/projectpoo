@@ -15,15 +15,17 @@ import {
   removeMedicalHistoryFromPatient as dbRemoveMedicalHistory,
   calculateAge
 } from "./data";
-import type { Patient, PatientFormData, BloodGroup } from "./types";
-// Hypothetical AI flow import - replace with actual flow if available
-// import { summarizePatientDataFlow } from "@/ai/flows/patientSummary"; // Adjust path as needed
+import type { Patient, PatientFormData, BloodGroup, Allergy, MedicalHistoryEntry, BloodGroupSelectOption } from "./types";
+// import { summarizePatientDataFlow } from "@/ai/flows/patientSummary"; 
 
 const PatientFormSchema = z.object({
-  nom: z.string().min(1, "Le nom de famille est requis."),
-  prenom: z.string().min(1, "Le prénom est requis."),
+  nom: z.string().min(2, "Le nom de famille doit comporter au moins 2 caractères."),
+  prenom: z.string().min(2, "Le prénom doit comporter au moins 2 caractères."),
   dateDeNaissance: z.string().min(1, "La date de naissance est requise."),
-  groupeSanguin: z.string().optional(),
+  groupeSanguin: z.custom<BloodGroupSelectOption>((val) => {
+    const validBloodGroups: BloodGroup[] = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+    return val === "" || (typeof val === 'string' && validBloodGroups.includes(val as BloodGroup));
+  }).optional(),
   notes: z.string().optional(),
 });
 
@@ -92,17 +94,10 @@ export async function deletePatientAction(id: string) {
     await dbDeletePatient(id);
     revalidatePath("/dashboard");
     revalidatePath("/patients");
-    // It's generally better to return a status rather than redirecting from an action
-    // The redirect can be handled by the component calling this action based on the result.
-    // However, to keep current behavior:
   } catch (error) {
-    // Consider returning an error message to be displayed
-    // For now, the redirect will happen even if deletion fails on the server,
-    // which might not be ideal.
     return { message: "Échec de la suppression du patient.", success: false };
   }
-  redirect("/dashboard");
-  // return { message: "Patient supprimé avec succès.", success: true }; // Alternative return
+  redirect("/dashboard"); 
 }
 
 const AllergySchema = z.object({
@@ -116,15 +111,16 @@ export async function addAllergyAction(patientId: string, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation échouée.",
+      message: "Validation échouée pour l'allergie.",
       success: false,
     };
   }
 
   try {
-    await dbAddAllergy(patientId, validatedFields.data.description);
+    const newAllergy = await dbAddAllergy(patientId, validatedFields.data.description);
+    if (!newAllergy) throw new Error("Failed to create allergy in DB");
     revalidatePath(`/patients/${patientId}`);
-    return { message: "Allergie ajoutée avec succès.", success: true };
+    return { message: "Allergie ajoutée avec succès.", success: true, newAllergyId: newAllergy.id };
   } catch (e) {
     return { message: "Échec de l'ajout de l'allergie.", success: false };
   }
@@ -153,15 +149,16 @@ export async function addMedicalHistoryAction(patientId: string, formData: FormD
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation échouée.",
+      message: "Validation échouée pour l'antécédent médical.",
       success: false,
     };
   }
 
   try {
-    await dbAddMedicalHistory(patientId, validatedFields.data);
+    const newEntry = await dbAddMedicalHistory(patientId, validatedFields.data as Omit<MedicalHistoryEntry, 'id'>);
+    if (!newEntry) throw new Error("Failed to create medical history entry in DB");
     revalidatePath(`/patients/${patientId}`);
-    return { message: "Entrée d'antécédent médical ajoutée avec succès.", success: true };
+    return { message: "Entrée d'antécédent médical ajoutée avec succès.", success: true, newEntryId: newEntry.id };
   } catch (e) {
     return { message: "Échec de l'ajout de l'antécédent médical.", success: false };
   }
@@ -185,20 +182,18 @@ export async function generateHealthSummaryAction(patientId: string): Promise<{ 
   }
 
   try {
-    // IMPORTANT: Ceci est un placeholder pour l'appel réel au flux IA.
-    // Vous devrez importer et utiliser votre flux Genkit ici.
-    // Exemple : const summary = await summarizePatientDataFlow(patient);
-    // Le flux doit être défini dans src/ai/flows (par ex. src/ai/flows/patientSummary.ts)
-    // et doit être correctement configuré avec Genkit.
-    
+    // Placeholder for actual AI flow call
     console.warn("Fonctionnalité Résumé IA : Utilisation d'un résumé fictif. Implémentez l'appel réel au flux IA dans src/lib/actions.ts");
     
     const patientAge = calculateAge(patient.dateDeNaissance);
     const allergiesText = patient.allergies.length > 0 ? patient.allergies.map(a => a.description).join(', ') : 'Aucune connue';
-    const historyText = patient.antecedents.length > 0 ? patient.antecedents.map(h => `${h.description} (en ${new Date(h.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })})`).join('; ') : 'Aucun notable';
+    const historyText = patient.antecedents.length > 0 
+        ? patient.antecedents.map(h => `${h.description} (en ${new Date(h.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })})`).join('; ') 
+        : 'Aucun notable';
 
-    const mockSummary = `Résumé pour ${patient.prenom} ${patient.nom}:\nÂge : ${patientAge} ans.\nAllergies : ${allergiesText}.\nAntécédents médicaux : ${historyText}.\nNotes générales : ${patient.notes || 'Aucune note.'}`;
+    const mockSummary = `Résumé pour ${patient.prenom} ${patient.nom}:\nÂge : ${patientAge} ans.\nGroupe Sanguin: ${patient.groupeSanguin || 'Non spécifié'}\nAllergies : ${allergiesText}.\nAntécédents médicaux : ${historyText}.\nNotes générales : ${patient.notes || 'Aucune note.'}\n\nCeci est un résumé généré automatiquement à des fins de démonstration. Pour une analyse médicale complète, veuillez consulter un professionnel de santé.`;
     
+    // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     return { summary: mockSummary };
@@ -207,3 +202,4 @@ export async function generateHealthSummaryAction(patientId: string): Promise<{ 
     return { error: "Échec de la génération du résumé de santé. " + (error instanceof Error ? error.message : String(error)) };
   }
 }
+

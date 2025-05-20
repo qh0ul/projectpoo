@@ -17,8 +17,8 @@ import { cn } from "@/lib/utils";
 import { NAV_ITEMS, APP_NAME } from "@/constants";
 import { Activity, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useSidebar as useSidebarContext } from "@/components/ui/sidebar"; // aliased import
-import { useState, useEffect } from "react"; // Added for isClient state
+import { useSidebar as useSidebarContext } from "@/components/ui/sidebar";
+import { useState, useEffect } from "react";
 
 export interface NavItem {
   href: string;
@@ -44,7 +44,7 @@ export function AppSidebar() {
           {isClient && sidebarState === "expanded" && (
              <span className="font-semibold text-lg whitespace-nowrap">{APP_NAME}</span>
           )}
-           {!isClient && sidebarState === "expanded" && ( // Fallback for SSR or pre-hydration
+           {!isClient && sidebarState === "expanded" && ( 
             <span className="font-semibold text-lg whitespace-nowrap invisible">{APP_NAME}</span>
           )}
         </Link>
@@ -76,8 +76,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2">
-        {/* Footer content if any, e.g. settings, logout */}
       </SidebarFooter>
     </Sidebar>
   );
 }
+

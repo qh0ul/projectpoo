@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { PlusCircle, Edit, Trash2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { getPatients, calculateAge } from "@/lib/data";
 import type { Patient } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { format, parseISO } from 'date-fns';
-import { fr } from 'date-fns/locale'; // Import French locale
+import { fr } from 'date-fns/locale';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,13 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deletePatientAction } from "@/lib/actions"; // Using server action
+import { deletePatientAction } from "@/lib/actions"; 
 
 export const metadata = {
   title: "Dossiers Patients",
 };
 
-// Make this a server component to fetch data directly
 export default async function PatientsPage() {
   const patients = await getPatients();
 
@@ -117,7 +117,7 @@ export default async function PatientsPage() {
                             <AlertDialogFooter>
                               <AlertDialogCancel>Annuler</AlertDialogCancel>
                               <form action={async () => {
-                                "use server"; // Required for form action
+                                "use server"; 
                                 await deletePatientAction(patient.id);
                               }}>
                                 <AlertDialogAction type="submit" variant="destructive">
@@ -144,3 +144,4 @@ export default async function PatientsPage() {
     </div>
   );
 }
+

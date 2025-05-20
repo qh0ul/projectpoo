@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -28,7 +29,7 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
     } else if (result.error) {
       setError(result.error);
     } else {
-      setError("Une erreur inconnue s'est produite.");
+      setError("Une erreur inconnue s'est produite lors de la génération du résumé.");
     }
     setIsLoading(false);
   };
@@ -71,3 +72,4 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
     </div>
   );
 }
+
