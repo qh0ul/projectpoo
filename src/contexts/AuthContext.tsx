@@ -4,8 +4,8 @@
 import type { ReactNode } from 'react';
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { addPatientRecordForUser } from '@/lib/data'; // To create a patient record on registration
-import type { PatientFormData } from '@/lib/types'; // For registration data
+import { addPatientRecordForUser } from '@/lib/data'; 
+import type { PatientFormData } from '@/lib/types'; 
 
 type UserRole = 'patient' | 'medecin';
 
@@ -36,17 +36,27 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const INITIAL_MOCK_USERS: User[] = [
-  // Médecins
-  { id: 'doc1', email: 'medecin@santeoctet.app', role: 'medecin', nom: 'Traore', prenom: 'Ali' }, // Keep original Dr. Traore
+  // 15 Médecins
+  { id: 'doc1', email: 'medecin@santeoctet.app', role: 'medecin', nom: 'Traore', prenom: 'Ali' },
   { id: 'doc2', email: 'dralami.cardio@santeoctet.app', role: 'medecin', nom: 'Alami', prenom: 'Sofia' },
   { id: 'doc3', email: 'drbennani.pedia@santeoctet.app', role: 'medecin', nom: 'Bennani', prenom: 'Omar' },
   { id: 'doc4', email: 'drcherkaoui.gen@santeoctet.app', role: 'medecin', nom: 'Cherkaoui', prenom: 'Fatima' },
   { id: 'doc5', email: 'drfassi.dermo@santeoctet.app', role: 'medecin', nom: 'Fassi', prenom: 'Youssef' },
+  { id: 'doc6', email: 'drkadiri.endo@santeoctet.app', role: 'medecin', nom: 'Kadiri', prenom: 'Leila' },
+  { id: 'doc7', email: 'drsaidi.neuro@santeoctet.app', role: 'medecin', nom: 'Saidi', prenom: 'Ahmed' },
+  { id: 'doc8', email: 'drbelkacem.rhuma@santeoctet.app', role: 'medecin', nom: 'Belkacem', prenom: 'Nadia' },
+  { id: 'doc9', email: 'drjouahri.onco@santeoctet.app', role: 'medecin', nom: 'Jouahri', prenom: 'Hassan' },
+  { id: 'doc10', email: 'drelmansouri.psy@santeoctet.app', role: 'medecin', nom: 'El Mansouri', prenom: 'Samira' },
+  { id: 'doc11', email: 'drtazi.ophta@santeoctet.app', role: 'medecin', nom: 'Tazi', prenom: 'Karim' },
+  { id: 'doc12', email: 'drdaoudi.orl@santeoctet.app', role: 'medecin', nom: 'Daoudi', prenom: 'Amina' },
+  { id: 'doc13', email: 'drzayani.pneumo@santeoctet.app', role: 'medecin', nom: 'Zayani', prenom: 'Rachid' },
+  { id: 'doc14', email: 'dralaoui.nephro@santeoctet.app', role: 'medecin', nom: 'Alaoui', prenom: 'Meryem' },
+  { id: 'doc15', email: 'drchraibi.uro@santeoctet.app', role: 'medecin', nom: 'Chraibi', prenom: 'Yassine' },
   
-  // Patients initiaux
-  { id: 'pat1', email: 'patient@santeoctet.app', role: 'patient', nom: 'Zineb', prenom: 'Amina' },
+  // Patients initiaux (les ID doivent correspondre à ceux dans src/lib/data.ts pour la démo)
+  { id: 'pat1', email: 'patient@santeoctet.app', role: 'patient', nom: 'Zineb', prenom: 'Amina' }, // Amina Zineb
   { id: 'pat2', email: 'karim.benjelloun@patient.santeoctet.app', role: 'patient', nom: 'Benjelloun', prenom: 'Karim'},
-  { id: 'pat3', email: 'fatima.alami@patient.santeoctet.app', role: 'patient', nom: 'Alami', prenom: 'Fatima (Patiente)'}, // Differentiate from Dr. Alami
+  { id: 'pat3', email: 'fatima.alami@patient.santeoctet.app', role: 'patient', nom: 'Alami', prenom: 'Fatima (Patiente)'},
   { id: 'pat4', email: 'youssef.cherkaoui@patient.santeoctet.app', role: 'patient', nom: 'Cherkaoui', prenom: 'Youssef (Patient)'},
   { id: 'pat5', email: 'zineb.elfassi@patient.santeoctet.app', role: 'patient', nom: 'El Fassi', prenom: 'Zineb'},
   { id: 'pat6', email: 'omar.saidi@patient.santeoctet.app', role: 'patient', nom: 'Saidi', prenom: 'Omar'},
@@ -63,6 +73,16 @@ const INITIAL_MOCK_PASSWORDS: Record<string, string> = {
   'drbennani.pedia@santeoctet.app': 'PediaCare456*',
   'drcherkaoui.gen@santeoctet.app': 'GeneralMed789+',
   'drfassi.dermo@santeoctet.app': 'DermoHealth101$',
+  'drkadiri.endo@santeoctet.app': 'EndoSecurePass$',
+  'drsaidi.neuro@santeoctet.app': 'NeuroMind!789',
+  'drbelkacem.rhuma@santeoctet.app': 'RhumaFlex#2024',
+  'drjouahri.onco@santeoctet.app': 'OncoHope@123',
+  'drelmansouri.psy@santeoctet.app': 'PsyCalm321&',
+  'drtazi.ophta@santeoctet.app': 'OphtaVision*55',
+  'drdaoudi.orl@santeoctet.app': 'ORLHealth!234',
+  'drzayani.pneumo@santeoctet.app': 'PneumoBreath#56',
+  'dralaoui.nephro@santeoctet.app': 'NephroCare%789',
+  'drchraibi.uro@santeoctet.app': 'UroSecure@2025',
 
   // Patients initiaux
   'patient@santeoctet.app': 'AminaPass123',
@@ -122,9 +142,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(async (email: string, motDePasse: string): Promise<boolean> => {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 300)); 
     
-    // Ensure latest users/passwords are used (e.g., if registered in another tab)
     const currentStoredUsers = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || JSON.stringify(INITIAL_MOCK_USERS));
     const currentStoredPasswords = JSON.parse(localStorage.getItem(PASSWORDS_STORAGE_KEY) || JSON.stringify(INITIAL_MOCK_PASSWORDS));
     
@@ -160,8 +179,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 300));
 
-    const currentUsers: User[] = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '[]');
-    const currentPasswords: Record<string, string> = JSON.parse(localStorage.getItem(PASSWORDS_STORAGE_KEY) || '{}');
+    let currentUsers: User[] = JSON.parse(localStorage.getItem(USERS_STORAGE_KEY) || '[]');
+    let currentPasswords: Record<string, string> = JSON.parse(localStorage.getItem(PASSWORDS_STORAGE_KEY) || '{}');
+    
+    // Ensure currentUsers and currentPasswords are arrays/objects if localStorage was empty or corrupt
+    if (!Array.isArray(currentUsers)) currentUsers = [];
+    if (typeof currentPasswords !== 'object' || currentPasswords === null) currentPasswords = {};
+
 
     if (currentUsers.find(u => u.email.toLowerCase() === data.email.toLowerCase())) {
       setIsLoading(false);
@@ -183,12 +207,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(updatedUsers));
       localStorage.setItem(PASSWORDS_STORAGE_KEY, JSON.stringify(updatedPasswords));
-      setUsersList(updatedUsers); // Update state
-      setPasswordsMap(updatedPasswords); // Update state
+      setUsersList(updatedUsers); 
+      setPasswordsMap(updatedPasswords); 
 
-      // Create a corresponding patient record
       const patientRecordData: Omit<PatientFormData, 'groupeSanguin' | 'notes'> & { id: string } = {
-        id: newUserId, // Use the same ID as the user for linking
+        id: newUserId, 
         nom: data.nom,
         prenom: data.prenom,
         dateDeNaissance: data.dateDeNaissance,
@@ -199,7 +222,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { success: true, message: "Inscription réussie ! Vous pouvez maintenant vous connecter." };
     } catch (error) {
       console.error("Erreur lors de l'inscription:", error);
-      // Potentially roll back user/password storage if patient record creation fails critically
       setIsLoading(false);
       return { success: false, message: "Erreur lors de l'inscription. Veuillez réessayer." };
     }
@@ -220,3 +242,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

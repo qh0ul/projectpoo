@@ -9,39 +9,38 @@ body {
 
 @layer base {
   :root {
-    /* PRD Colors */
-    --soft-blue-hsl: 207 66% 68%; /* #7BB4E3 */
-    --light-desaturated-blue-hsl: 208 100% 97%; /* #F0F8FF */
-    --light-green-hsl: 94 51% 75%; /* #BCE29E */
+    /* PRD Colors - Target: Soft Blue (#7BB4E3), Light Desaturated Blue (#F0F8FF), Light Green (#BCE29E) */
+    --soft-blue-hsl: 207 66% 68%; /* #7BB4E3 - Main Accent / Primary */
+    --light-desaturated-blue-hsl: 208 100% 97%; /* #F0F8FF - Background */
+    --light-green-hsl: 94 51% 75%; /* #BCE29E - Secondary Accent */
 
-    --background: var(--light-desaturated-blue-hsl);
-    --foreground: 215 25% 27%; /* Dark Grayish Blue */
+    --background: var(--light-desaturated-blue-hsl); /* #F0F8FF */
+    --foreground: 215 25% 27%; /* Dark Grayish Blue for text */
 
-    --card: 0 0% 100%; /* White */
+    --card: 0 0% 100%; /* White cards */
     --card-foreground: 215 25% 27%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 215 25% 27%;
 
-    --primary: var(--soft-blue-hsl); /* Using Soft Blue as primary */
-    --primary-foreground: 207 50% 15%; /* Very Dark Blue for contrast on soft blue */
+    --primary: var(--soft-blue-hsl); /* Soft Blue as primary */
+    --primary-foreground: 0 0% 100%; /* White text on soft blue primary for better contrast */
     
-    /* Custom variable for the requested soft blue color (#7BB4E3) */
-    --soft-blue: var(--soft-blue-hsl);
+    --soft-blue: var(--soft-blue-hsl); /* Custom variable for easy access */
 
-    --secondary: 208 80% 92%; 
+    --secondary: 208 60% 92%; /* Lighter blue for secondary elements */
     --secondary-foreground: 215 25% 35%;
 
-    --muted: 208 60% 90%;
+    --muted: 208 50% 90%; /* Muted blue */
     --muted-foreground: 215 20% 45%;
 
-    --accent: var(--light-green-hsl);
-    --accent-foreground: 94 40% 20%; /* Dark Green */
+    --accent: var(--light-green-hsl); /* Light Green for accents */
+    --accent-foreground: 94 40% 25%; /* Darker Green for text on light green accent */
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 72% 51%; /* Adjusted red for better accessibility */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 208 30% 85%;
+    --border: 208 30% 88%; /* Slightly softer border */
     --input: 0 0% 100%; /* White inputs */
     --ring: hsl(var(--soft-blue-hsl)); /* Ring color from soft blue */
 
@@ -55,13 +54,13 @@ body {
     --chart-5: 160 60% 45%;
 
     /* Sidebar specific theme variables */
-    --sidebar-background: 210 30% 98%;
+    --sidebar-background: 210 40% 98%; /* Slightly off-white for sidebar */
     --sidebar-foreground: 215 25% 27%;
     --sidebar-primary: hsl(var(--primary));
     --sidebar-primary-foreground: hsl(var(--primary-foreground));
     --sidebar-accent: hsl(var(--accent));
     --sidebar-accent-foreground: hsl(var(--accent-foreground));
-    --sidebar-border: 210 20% 90%;
+    --sidebar-border: 210 25% 90%;
     --sidebar-ring: hsl(var(--ring));
   }
 
@@ -75,8 +74,8 @@ body {
     --popover: 215 28% 17%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: hsl(var(--soft-blue-hsl)); /* Soft Blue for dark mode */
-    --primary-foreground: 207 80% 95%; /* Lighter foreground for dark primary */
+    --primary: hsl(var(--soft-blue-hsl)); 
+    --primary-foreground: 207 80% 95%; 
     
     --soft-blue: var(--soft-blue-hsl);
 
@@ -125,3 +124,5 @@ body {
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+    
