@@ -1,3 +1,4 @@
+
 import type { Patient, Allergy, MedicalHistoryEntry, BloodGroup } from './types';
 // import { format } from 'date-fns'; // Not used here directly for formatting output
 
@@ -50,6 +51,69 @@ let patientsStore: Patient[] = [
     allergies: [],
     antecedents: [],
     notes: 'Étudiante, bonne santé générale. Aucun antécédent notable.'
+  },
+  {
+    id: '5',
+    nom: 'Saidi',
+    prenom: 'Omar',
+    dateDeNaissance: '1965-08-25',
+    groupeSanguin: 'O+',
+    allergies: [{ id: 'a4', description: 'Aspirine' }],
+    antecedents: [
+      { id: 'h6', date: '2005-11-10', description: 'Hypertension artérielle diagnostiquée' },
+      { id: 'h7', date: '2018-06-01', description: 'Pontage coronarien' },
+    ],
+    notes: 'Patient cardiaque, suivi par un cardiologue. Traitement quotidien pour l\'hypertension.'
+  },
+  {
+    id: '6',
+    nom: 'Berrada',
+    prenom: 'Sofia',
+    dateDeNaissance: '1998-01-12',
+    groupeSanguin: 'A-',
+    allergies: [{ id: 'a5', description: 'Fruits de mer' }],
+    antecedents: [
+      { id: 'h8', date: '2020-04-03', description: 'Anémie ferriprive traitée' },
+    ],
+    notes: 'Végétarienne. Vigilance sur les apports en fer.'
+  },
+  {
+    id: '7',
+    nom: 'Tazi',
+    prenom: 'Amine',
+    dateDeNaissance: '1970-12-01',
+    groupeSanguin: 'B-',
+    allergies: [],
+    antecedents: [
+      { id: 'h9', date: '1995-09-15', description: 'Asthme depuis l\'enfance' },
+      { id: 'h10', date: '2023-02-20', description: 'Pneumonie, guérie' },
+    ],
+    notes: 'Utilise un inhalateur pour l\'asthme en cas de besoin. Bilans pneumologiques réguliers.'
+  },
+  {
+    id: '8',
+    nom: 'Lazaar',
+    prenom: 'Layla',
+    dateDeNaissance: '1988-07-07',
+    groupeSanguin: 'AB+',
+    allergies: [{ id: 'a6', description: 'Pénicilline' }, { id: 'a7', description: 'Acariens'}],
+    antecedents: [
+      { id: 'h11', date: '2016-10-28', description: 'Diabète de type 1 diagnostiqué' },
+    ],
+    notes: 'Patiente diabétique sous insuline. Suivi endocrinologique strict. Porte un bracelet d\'alerte médicale.'
+  },
+  {
+    id: '9',
+    nom: 'Kettani',
+    prenom: 'Mehdi',
+    dateDeNaissance: '2005-04-18',
+    groupeSanguin: 'O+',
+    allergies: [],
+    antecedents: [
+      { id: 'h12', date: '2010-05-22', description: 'Varicelle (enfance)' },
+      { id: 'h13', date: '2022-08-30', description: 'Entorse de la cheville droite (sport)' },
+    ],
+    notes: 'Adolescent sportif, pratique le football. Bonne santé globale.'
   },
 ];
 
@@ -148,3 +212,4 @@ export function calculateAge(dateOfBirth: string): number {
   }
   return age;
 }
+
