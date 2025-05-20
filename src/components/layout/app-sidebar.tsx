@@ -14,10 +14,11 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { NAV_ITEMS, APP_NAME } from "@/constants";
+import { NAV_ITEMS_AUTHENTICATED, NAV_ITEMS_PUBLIC, APP_NAME } from "@/constants";
 import { Activity, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar as useSidebarContext } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 
 export interface NavItem {
@@ -30,12 +31,30 @@ export interface NavItem {
 export function AppSidebar() {
   const pathname = usePathname();
   const { toggleSidebar, state: sidebarState } = useSidebarContext();
+  const { user, isLoading } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  const navItemsToDisplay = isLoading ? [] : (user ? NAV_ITEMS_AUTHENTICATED : NAV_ITEMS_PUBLIC);
+
+  if (isLoading && !isClient) { // Show minimal sidebar or loader during initial server render or if auth is loading
+    return (
+       <Sidebar collapsible="icon">
+        <SidebarHeader className="flex items-center justify-between p-4">
+          <Link href="/" className="flex items-center gap-2">
+            <Activity className="h-7 w-7 text-primary" />
+          </Link>
+        </SidebarHeader>
+        <SidebarContent>
+           {/* Optionally, add skeleton loaders here */}
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
+  
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex items-center justify-between p-4">
@@ -57,7 +76,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {NAV_ITEMS.map((item) => (
+          {navItemsToDisplay.map((item) => (
             <SidebarMenuItem key={item.href}>
               <SidebarMenuButton
                 asChild
@@ -76,8 +95,8 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-2">
+        {/* Footer content can go here if needed */}
       </SidebarFooter>
     </Sidebar>
   );
 }
-

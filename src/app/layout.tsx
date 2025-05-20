@@ -8,6 +8,9 @@ import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { APP_NAME } from "@/constants";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import ProtectedContent from "@/components/layout/ProtectedContent";
+
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -22,6 +25,7 @@ export const metadata: Metadata = {
   description: "Une application de dossier médical numérique.",
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,22 +39,13 @@ export default function RootLayout({
           fontSans.variable
         )}
       >
-        <SidebarProvider defaultOpen={true}>
-          <AppSidebar />
-          <div className="flex flex-col flex-1 md:peer-data-[collapsible=icon]:pl-[var(--sidebar-width-icon)] peer-data-[collapsible=offcanvas]:pl-0 md:pl-[var(--sidebar-width)] transition-[padding-left] ease-linear duration-200">
-            <AppHeader />
-            <main className="flex-1">
-              <SidebarInset>
-                <div className="container max-w-screen-2xl mx-auto p-4 md:p-6 lg:p-8">
-                 {children}
-                </div>
-              </SidebarInset>
-            </main>
-          </div>
-        </SidebarProvider>
-        <Toaster />
+        <AuthProvider>
+          <ProtectedContent>
+            {children}
+          </ProtectedContent>
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
 }
-

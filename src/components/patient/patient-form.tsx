@@ -29,13 +29,16 @@ import { CalendarIcon, Save, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const PatientFormSchema = z.object({
   nom: z.string().min(2, { message: "Le nom de famille doit comporter au moins 2 caractères." }),
   prenom: z.string().min(2, { message: "Le prénom doit comporter au moins 2 caractères." }),
-  dateDeNaissance: z.string().refine((val) => !isNaN(Date.parse(val)) && val.length > 0, { message: "Une date de naissance valide est requise."}),
+  dateDeNaissance: z.string().refine((val) => {
+    const date = parseISO(val); // Handles yyyy-MM-dd
+    return isValid(date) && val.length > 0;
+  }, { message: "Une date de naissance valide est requise (YYYY-MM-DD)."}),
   groupeSanguin: z.custom<BloodGroupSelectOption>().optional(),
   notes: z.string().optional(),
 });
@@ -54,27 +57,28 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
         nom: patient.nom,
         prenom: patient.prenom,
         dateDeNaissance: patient.dateDeNaissance ? format(parseISO(patient.dateDeNaissance), 'yyyy-MM-dd') : '',
-        groupeSanguin: patient.groupeSanguin || undefined, // Use undefined for empty to show placeholder
+        groupeSanguin: patient.groupeSanguin || undefined,
         notes: patient.notes || '',
       }
     : {
         nom: "",
         prenom: "",
         dateDeNaissance: "",
-        groupeSanguin: undefined, // Use undefined for empty to show placeholder
+        groupeSanguin: undefined,
         notes: "",
       };
 
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(PatientFormSchema),
     defaultValues,
+    mode: "onChange", // Validate on change for better UX
   });
 
   const handleFormSubmit = async (values: PatientFormValues) => {
     const dataToSubmit: PatientFormData = {
       ...values,
       dateDeNaissance: values.dateDeNaissance, // Already in yyyy-MM-dd
-      groupeSanguin: (values.groupeSanguin as BloodGroup) || '', // Ensure it's BloodGroup or empty string
+      groupeSanguin: (values.groupeSanguin as BloodGroup) || '', 
     };
     await onSubmit(dataToSubmit);
   };
@@ -82,15 +86,15 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
           <FormField
             control={form.control}
             name="prenom"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Prénom</FormLabel>
+                <FormLabel>Prénom <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="Entrez le prénom" {...field} />
+                  <Input placeholder="Prénom du patient" {...field} className="text-base"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -101,9 +105,9 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="nom"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nom de famille</FormLabel>
+                <FormLabel>Nom de famille <span className="text-destructive">*</span></FormLabel>
                 <FormControl>
-                  <Input placeholder="Entrez le nom de famille" {...field} />
+                  <Input placeholder="Nom de famille du patient" {...field} className="text-base"/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,18 +118,18 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="dateDeNaissance"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Date de Naissance</FormLabel>
+                <FormLabel>Date de Naissance <span className="text-destructive">*</span></FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant={"outline"}
                         className={cn(
-                          "w-full pl-3 text-left font-normal",
+                          "w-full pl-3 text-left font-normal text-base h-11", // Increased height
                           !field.value && "text-muted-foreground"
                         )}
                       >
-                        {field.value ? (
+                        {field.value && isValid(parseISO(field.value)) ? (
                           format(parseISO(field.value), "PPP", { locale: fr })
                         ) : (
                           <span>Choisir une date</span>
@@ -137,11 +141,14 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? parseISO(field.value) : undefined}
+                      selected={field.value && isValid(parseISO(field.value)) ? parseISO(field.value) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) =>
                         date > new Date() || date < new Date("1900-01-01")
                       }
+                      captionLayout="dropdown-buttons"
+                      fromYear={1900}
+                      toYear={new Date().getFullYear()}
                       initialFocus
                       locale={fr}
                     />
@@ -159,17 +166,17 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                 <FormLabel>Groupe Sanguin</FormLabel>
                 <Select 
                     onValueChange={field.onChange} 
-                    value={field.value || ""} // Ensure value is string for Select
+                    value={field.value || ""} 
                     defaultValue={field.value || ""}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="text-base h-11">
                       <SelectValue placeholder="Sélectionner le groupe sanguin" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
                     {BLOOD_GROUPS_OPTIONS.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
+                      <SelectItem key={option.value} value={option.value} className="text-base">
                         {option.label}
                       </SelectItem>
                     ))}
@@ -188,8 +195,8 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
               <FormLabel>Notes Générales</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Entrez toute note pertinente concernant le patient"
-                  className="resize-y min-h-[100px]"
+                  placeholder="Entrez toute note pertinente concernant le patient (facultatif)"
+                  className="resize-y min-h-[120px] text-base"
                   {...field}
                 />
               </FormControl>
@@ -200,11 +207,11 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             </FormItem>
           )}
         />
-        <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto">
+        <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto text-base py-3 px-6 shadow-md hover:shadow-lg transition-shadow">
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
           ) : (
-            <Save className="mr-2 h-4 w-4" />
+            <Save className="mr-2 h-5 w-5" />
           )}
           {patient ? "Enregistrer les modifications" : "Créer le patient"}
         </Button>
@@ -212,4 +219,3 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
     </Form>
   );
 }
-
