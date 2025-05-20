@@ -24,8 +24,9 @@ export const NAV_ITEMS: NavItem[] = [
   // e.g., { href: "/parametres", icon: Settings, label: "Paramètres" }
 ];
 
-export const BLOOD_GROUPS_OPTIONS: { value: BloodGroup | ''; label: string }[] = [
-  { value: '', label: 'Sélectionner Groupe Sanguin' },
+// Removed the item with value: '' as it causes an error with Select.Item.
+// The SelectValue component's placeholder prop handles the "Sélectionner..." text.
+export const BLOOD_GROUPS_OPTIONS: { value: BloodGroup; label: string }[] = [
   { value: 'A+', label: 'A+' },
   { value: 'A-', label: 'A-' },
   { value: 'B+', label: 'B+' },
