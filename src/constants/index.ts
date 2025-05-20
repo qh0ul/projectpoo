@@ -2,7 +2,7 @@ import type { NavItem } from "@/components/layout/app-sidebar";
 import type { BloodGroup } from "@/lib/types";
 import { LayoutDashboard, UserPlus, Users } from "lucide-react";
 
-export const APP_NAME = "SantéOctet";
+export const APP_NAME = "Mon carnet de santé";
 
 export const NAV_ITEMS: NavItem[] = [
   {
@@ -24,9 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
   // e.g., { href: "/parametres", icon: Settings, label: "Paramètres" }
 ];
 
-// Removed the item with value: '' as it causes an error with Select.Item.
-// The SelectValue component's placeholder prop handles the "Sélectionner..." text.
-export const BLOOD_GROUPS_OPTIONS: { value: BloodGroup; label: string }[] = [
+export const BLOOD_GROUPS_OPTIONS: { value: Exclude<BloodGroup, ''>; label: string }[] = [
   { value: 'A+', label: 'A+' },
   { value: 'A-', label: 'A-' },
   { value: 'B+', label: 'B+' },
