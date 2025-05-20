@@ -1,13 +1,14 @@
 
 "use client"; 
 
+import React from "react"; // Import React for React.use()
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation"; 
+import { useRouter, notFound } from "next/navigation"; 
 import { getPatientById, calculateAge } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, StickyNote, Sparkles, Loader2 } from "lucide-react"; // Removed Siren, History
+import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, StickyNote, Sparkles, Loader2 } from "lucide-react";
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { AllergiesSection } from "@/components/patient/allergies-section";
@@ -19,8 +20,11 @@ import { useEffect, useState } from "react";
 import type { Patient } from "@/lib/types"; 
 import { useToast } from "@/hooks/use-toast";
 
+export default function PatientDetailPage({ params: paramsPromise }: { params: Promise<{ id: string }> }) {
+  // Unwrap the params promise using React.use()
+  const params = React.use(paramsPromise);
+  const patientId = params.id; // Use this stable id throughout the component
 
-export default function PatientDetailPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -30,7 +34,8 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
   useEffect(() => {
     async function fetchPatientDetails() {
       setIsLoading(true);
-      const fetchedPatient = await getPatientById(params.id);
+      // Use the unwrapped patientId
+      const fetchedPatient = await getPatientById(patientId);
       
       if (!fetchedPatient) {
         toast({
@@ -38,20 +43,17 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
             title: "Patient non trouvé",
             description: "Le dossier patient demandé n'existe pas ou plus.",
          });
-        notFound(); // Or router.push('/patients') or router.push('/dashboard')
+        notFound(); 
         return;
       }
 
-      // Authorization:
-      // If user is a patient, they can only see their own record (user.id must match patient.id).
-      // If user is a doctor, they can see any patient record.
       if (user?.role === 'patient' && user.id !== fetchedPatient.id ) {
          toast({
             variant: "destructive",
             title: "Accès non autorisé",
             description: "Vous ne pouvez consulter que votre propre dossier médical.",
          });
-        router.push('/dashboard'); // Redirect to their dashboard
+        router.push('/dashboard'); 
         return;
       }
       
@@ -62,13 +64,10 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
       setIsLoading(false);
     }
 
-    if (user) { // Ensure user context is loaded
+    if (user) { 
         fetchPatientDetails();
-    } else {
-      // If user is not loaded yet, wait or handle (could show a general loader)
-      // For now, if no user, it might try to fetch and fail auth check, then redirect.
     }
-  }, [params.id, user, router, toast]);
+  }, [patientId, user, router, toast]); // Use the unwrapped patientId in the dependency array
 
 
   if (isLoading || !patient) {
@@ -81,7 +80,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
   }
 
   const age = calculateAge(patient.dateDeNaissance);
-  const canEdit = user?.role === 'medecin' || user?.id === patient.id; // Doctors or the patient themselves can edit notes/allergies
+  const canEdit = user?.role === 'medecin' || user?.id === patient.id; 
 
   return (
     <div className="space-y-8">
@@ -103,13 +102,13 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
         </div>
         <div className="flex gap-2">
            <Button variant="outline" asChild className="shadow-sm hover:shadow-md transition-shadow">
-            <Link href={`/print/patients/${patient.id}`} target="_blank">
+            <Link href={`/print/patients/${patientId}`} target="_blank">
               <FileText className="mr-2 h-4 w-4" /> Exporter en PDF
             </Link>
           </Button>
-          {user?.role === 'medecin' && ( // Only doctors can edit core patient info
+          {user?.role === 'medecin' && ( 
             <Button asChild className="shadow-sm hover:shadow-md transition-shadow">
-              <Link href={`/patients/${patient.id}/edit`}>
+              <Link href={`/patients/${patientId}/edit`}>
                 <Edit className="mr-2 h-4 w-4" /> Modifier Patient
               </Link>
             </Button>
@@ -164,7 +163,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          {user?.role === 'medecin' && ( // AI Summary only for doctors for now
+          {user?.role === 'medecin' && ( 
             <Card className="shadow-xl border border-border">
                 <CardHeader>
                 <CardTitle className="text-xl flex items-center">
