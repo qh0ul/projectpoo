@@ -39,9 +39,9 @@ export function AppSidebar() {
           )}
         </Link>
         {sidebarState === "expanded" && (
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar}>
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar} title="Ouvrir/Fermer le menu latéral">
             <PanelLeft />
-            <span className="sr-only">Toggle Sidebar</span>
+            <span className="sr-only">Ouvrir/Fermer le menu latéral</span>
           </Button>
         )}
       </SidebarHeader>

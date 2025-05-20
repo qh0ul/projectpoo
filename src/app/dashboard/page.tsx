@@ -8,7 +8,7 @@ import { APP_NAME } from "@/constants";
 import Image from "next/image";
 
 export const metadata = {
-  title: "Dashboard",
+  title: "Tableau de bord",
 };
 
 export default async function DashboardPage() {
@@ -18,14 +18,14 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Patient Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Tableau de bord des patients</h1>
           <p className="text-muted-foreground">
-            Welcome to {APP_NAME}. Manage your patients efficiently.
+            Bienvenue sur {APP_NAME}. Gérez vos patients efficacement.
           </p>
         </div>
         <Button asChild>
           <Link href="/patients/new">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Patient
+            <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un nouveau patient
           </Link>
         </Button>
       </div>
@@ -34,13 +34,13 @@ export default async function DashboardPage() {
         <Card className="w-full py-12">
           <CardContent className="flex flex-col items-center justify-center text-center space-y-4">
             <Users className="h-16 w-16 text-muted-foreground" />
-            <h3 className="text-xl font-semibold">No Patients Yet</h3>
+            <h3 className="text-xl font-semibold">Aucun patient pour le moment</h3>
             <p className="text-muted-foreground">
-              Start by adding your first patient to their health journey.
+              Commencez par ajouter votre premier patient à son parcours de santé.
             </p>
             <Button asChild className="mt-4">
               <Link href="/patients/new">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Patient
+                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter un patient
               </Link>
             </Button>
           </CardContent>
@@ -62,25 +62,25 @@ export default async function DashboardPage() {
                   />
                 </div>
                 <CardDescription>
-                  Age: {calculateAge(patient.dateDeNaissance)} | Blood Group: {patient.groupeSanguin || 'N/A'}
+                  Âge : {calculateAge(patient.dateDeNaissance)} | Groupe Sanguin : {patient.groupeSanguin || 'N/A'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-sm text-muted-foreground line-clamp-2">
-                  {patient.notes || "No additional notes."}
+                  {patient.notes || "Aucune note supplémentaire."}
                 </p>
                 <div className="mt-2 space-y-1">
                   {patient.allergies.length > 0 && (
-                    <p className="text-xs">Allergies: {patient.allergies.map(a => a.description).join(', ')}</p>
+                    <p className="text-xs">Allergies : {patient.allergies.map(a => a.description).join(', ')}</p>
                   )}
                   {patient.antecedents.length > 0 && (
-                     <p className="text-xs">Recent History: {patient.antecedents[0]?.description}</p>
+                     <p className="text-xs">Antécédent récent : {patient.antecedents[0]?.description}</p>
                   )}
                 </div>
               </CardContent>
               <CardFooter>
                 <Button asChild variant="outline" className="w-full">
-                  <Link href={`/patients/${patient.id}`}>View Details</Link>
+                  <Link href={`/patients/${patient.id}`}>Voir les détails</Link>
                 </Button>
               </CardFooter>
             </Card>

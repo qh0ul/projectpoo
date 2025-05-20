@@ -1,12 +1,12 @@
 import type { Patient, Allergy, MedicalHistoryEntry, BloodGroup } from './types';
-import { format } from 'date-fns';
+// import { format } from 'date-fns'; // Not used here directly for formatting output
 
 // In-memory store for patients
 let patientsStore: Patient[] = [
   {
     id: '1',
-    nom: 'Dupont',
-    prenom: 'Jean',
+    nom: 'Benjelloun',
+    prenom: 'Karim',
     dateDeNaissance: '1985-05-15',
     groupeSanguin: 'A+',
     allergies: [{ id: 'a1', description: 'Pollen' }, {id: 'a2', description: 'Arachides'}],
@@ -18,8 +18,8 @@ let patientsStore: Patient[] = [
   },
   {
     id: '2',
-    nom: 'Martin',
-    prenom: 'Sophie',
+    nom: 'Alami',
+    prenom: 'Fatima',
     dateDeNaissance: '1992-11-30',
     groupeSanguin: 'O-',
     allergies: [],
@@ -27,6 +27,29 @@ let patientsStore: Patient[] = [
       { id: 'h3', date: '2015-03-12', description: 'Fracture du bras gauche' }
     ],
     notes: 'RAS.'
+  },
+   {
+    id: '3',
+    nom: 'Cherkaoui',
+    prenom: 'Youssef',
+    dateDeNaissance: '1978-09-22',
+    groupeSanguin: 'B+',
+    allergies: [{ id: 'a3', description: 'Poussière' }],
+    antecedents: [
+      { id: 'h4', date: '2019-01-15', description: 'Chirurgie mineure au genou' },
+      { id: 'h5', date: '2021-05-05', description: 'Vaccination Grippe' },
+    ],
+    notes: 'Actif, pratique la course à pied. Se plaint parfois de douleurs au genou opéré.'
+  },
+  {
+    id: '4',
+    nom: 'El Fassi',
+    prenom: 'Zineb',
+    dateDeNaissance: '2001-03-10',
+    groupeSanguin: 'AB-',
+    allergies: [],
+    antecedents: [],
+    notes: 'Étudiante, bonne santé générale. Aucun antécédent notable.'
   },
 ];
 

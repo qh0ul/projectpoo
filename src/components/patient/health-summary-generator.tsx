@@ -28,7 +28,7 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
     } else if (result.error) {
       setError(result.error);
     } else {
-      setError("An unknown error occurred.");
+      setError("Une erreur inconnue s'est produite.");
     }
     setIsLoading(false);
   };
@@ -41,13 +41,13 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
         ) : (
           <Sparkles className="mr-2 h-4 w-4" />
         )}
-        Generate AI Summary
+        Générer un résumé IA
       </Button>
 
       {error && (
         <Alert variant="destructive">
           <Terminal className="h-4 w-4" />
-          <AlertTitle>Error Generating Summary</AlertTitle>
+          <AlertTitle>Erreur lors de la génération du résumé</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
@@ -55,7 +55,7 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
       {summary && (
         <Alert variant="default" className="bg-primary/10 border-primary/30">
            <Sparkles className="h-4 w-4 text-primary" />
-          <AlertTitle className="text-primary">Health Record Summary</AlertTitle>
+          <AlertTitle className="text-primary">Résumé du dossier médical</AlertTitle>
           <AlertDescription>
             <ScrollArea className="h-48 mt-2">
                  <p className="text-sm whitespace-pre-wrap">{summary}</p>
@@ -65,7 +65,7 @@ export function HealthSummaryGenerator({ patientId }: HealthSummaryGeneratorProp
       )}
        {!summary && !error && !isLoading && (
         <p className="text-sm text-center text-muted-foreground py-4">
-          Click the button above to generate an AI-powered health summary.
+          Cliquez sur le bouton ci-dessus pour générer un résumé de santé par IA.
         </p>
       )}
     </div>

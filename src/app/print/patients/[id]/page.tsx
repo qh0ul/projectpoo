@@ -2,14 +2,15 @@ import { getPatientById, calculateAge } from "@/lib/data";
 import { notFound } from "next/navigation";
 import { APP_NAME } from "@/constants";
 import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Import French locale
 import { Metadata } from "next";
 
 // This layout will ensure no other UI elements are printed
 function PrintLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <head>
-        <title>Printable Health Record</title>
+        <title>Dossier Médical Imprimable</title>
         <style dangerouslySetInnerHTML={{ __html: `
           @media print {
             body { 
@@ -67,9 +68,9 @@ function PrintLayout({ children }: { children: React.ReactNode }) {
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const patient = await getPatientById(params.id);
   if (!patient) {
-    return { title: "Patient Record Not Found" };
+    return { title: "Dossier Patient Non Trouvé" };
   }
-  return { title: `Print - ${patient.prenom} ${patient.nom}` };
+  return { title: `Imprimer - ${patient.prenom} ${patient.nom}` };
 }
 
 
@@ -85,23 +86,23 @@ export default async function PrintPatientPage({ params }: { params: { id: strin
   return (
     <PrintLayout>
       <div className="print-button-container no-print">
-        <button className="print-button" onClick={() => window.print()}>Print this page</button>
+        <button className="print-button" onClick={() => window.print()}>Imprimer cette page</button>
       </div>
       
-      <div className="header-app-name">{APP_NAME} - Digital Health Record</div>
-      <h1>Health Record: {patient.prenom} {patient.nom}</h1>
+      <div className="header-app-name">{APP_NAME} - Dossier Médical Numérique</div>
+      <h1>Dossier Médical : {patient.prenom} {patient.nom}</h1>
 
       <div className="section">
-        <h2>Patient Information</h2>
+        <h2>Informations du Patient</h2>
         <div className="info-grid">
-          <p className="info-item"><strong>Full Name:</strong> {patient.prenom} {patient.nom}</p>
-          <p className="info-item"><strong>Date of Birth:</strong> {format(parseISO(patient.dateDeNaissance), "MMMM d, yyyy")}</p>
-          <p className="info-item"><strong>Age:</strong> {age} years</p>
-          <p className="info-item"><strong>Blood Group:</strong> {patient.groupeSanguin || "Not specified"}</p>
+          <p className="info-item"><strong>Nom complet :</strong> {patient.prenom} {patient.nom}</p>
+          <p className="info-item"><strong>Date de naissance :</strong> {format(parseISO(patient.dateDeNaissance), "d MMMM yyyy", { locale: fr })}</p>
+          <p className="info-item"><strong>Âge :</strong> {age} ans</p>
+          <p className="info-item"><strong>Groupe Sanguin :</strong> {patient.groupeSanguin || "Non spécifié"}</p>
         </div>
          {patient.notes && (
           <>
-            <h3>General Notes:</h3>
+            <h3>Notes Générales :</h3>
             <p style={{whiteSpace: 'pre-wrap', backgroundColor: '#f9f9f9', padding: '10px', borderRadius: '4px', border: '1px solid #eee' }}>{patient.notes}</p>
           </>
         )}
@@ -116,30 +117,30 @@ export default async function PrintPatientPage({ params }: { params: { id: strin
             ))}
           </ul>
         ) : (
-          <p>No known allergies.</p>
+          <p>Aucune allergie connue.</p>
         )}
       </div>
 
       <div className="section">
-        <h2>Medical History</h2>
+        <h2>Antécédents Médicaux</h2>
         {patient.antecedents.length > 0 ? (
           <ul>
             {patient.antecedents.map((entry) => (
               <li key={entry.id}>
-                <strong>{format(parseISO(entry.date), "MMMM d, yyyy")}:</strong> {entry.description}
+                <strong>{format(parseISO(entry.date), "d MMMM yyyy", { locale: fr })} :</strong> {entry.description}
               </li>
             ))}
           </ul>
         ) : (
-          <p>No medical history recorded.</p>
+          <p>Aucun antécédent médical enregistré.</p>
         )}
       </div>
       
       {/* You could add a placeholder or instruction for AI summary if it's printed */}
       {/* 
       <div className="section">
-        <h2>Health Summary</h2>
-        <p><i>AI-generated health summary can be viewed in the application.</i></p>
+        <h2>Résumé de Santé</h2>
+        <p><i>Le résumé de santé généré par IA peut être consulté dans l'application.</i></p>
       </div>
       */}
 

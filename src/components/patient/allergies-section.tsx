@@ -36,27 +36,32 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
     setIsSubmitting(false);
 
     if (result?.success) {
-      // Assuming the action doesn't return the new allergy list, we'd ideally re-fetch or get it from result.
-      // For this mock, we'll manually add it. In a real app, revalidate and re-fetch.
-      setAllergies(prev => [...prev, { id: `temp-${Date.now()}`, description: newAllergy }]); // Temporary ID
+      // Re-fetch or update state based on actual new allergy from result if available
+      // For now, optimistic update. Ideally, result.newAllergyId or similar would be used
+      setAllergies(prev => [...prev, { id: result.newAllergyId || `temp-${Date.now()}`, description: newAllergy }]);
       setNewAllergy("");
       setIsDialogOpen(false);
-      toast({ title: "Success", description: "Allergy added." });
+      toast({ title: "Succès", description: result.message || "Allergie ajoutée." });
     } else {
-      toast({ variant: "destructive", title: "Error", description: result?.message || "Failed to add allergy." });
+      toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de l'ajout de l'allergie." });
     }
   };
 
   const handleRemoveAllergy = async (allergyId: string) => {
-    setIsSubmitting(true); // Could use a specific loading state per item
+    // Consider adding a per-item loading state if multiple removals can happen quickly
+    // For now, using global isSubmitting for simplicity
+    const originalAllergies = [...allergies];
+    setAllergies(prev => prev.filter(a => a.id !== allergyId)); // Optimistic update
+    
+    setIsSubmitting(true);
     const result = await removeAllergyAction(patientId, allergyId);
     setIsSubmitting(false);
 
     if (result?.success) {
-        setAllergies(prev => prev.filter(a => a.id !== allergyId));
-        toast({ title: "Success", description: "Allergy removed."});
+        toast({ title: "Succès", description: result.message || "Allergie supprimée."});
     } else {
-        toast({ variant: "destructive", title: "Error", description: result?.message || "Failed to remove allergy."});
+        setAllergies(originalAllergies); // Revert on failure
+        toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de la suppression de l'allergie."});
     }
   };
 
@@ -68,38 +73,38 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
             <Siren className="mr-2 h-5 w-5 text-orange-500" />
             Allergies
           </CardTitle>
-          <CardDescription>List of known allergies and reactions.</CardDescription>
+          <CardDescription>Liste des allergies et réactions connues.</CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Allergy
+              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une allergie
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
             <DialogHeader>
-              <DialogTitle>Add New Allergy</DialogTitle>
+              <DialogTitle>Ajouter une nouvelle allergie</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddAllergy} className="space-y-4 py-4">
               <div>
                 <Label htmlFor="allergy-description" className="sr-only">
-                  Allergy Description
+                  Description de l'allergie
                 </Label>
                 <Input
                   id="allergy-description"
                   value={newAllergy}
                   onChange={(e) => setNewAllergy(e.target.value)}
-                  placeholder="e.g., Penicillin, Peanuts"
+                  placeholder="Ex: Pénicilline, Arachides"
                   disabled={isSubmitting}
                 />
               </div>
               <DialogFooter>
                 <DialogClose asChild>
-                   <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
+                   <Button type="button" variant="outline" disabled={isSubmitting}>Annuler</Button>
                 </DialogClose>
                 <Button type="submit" disabled={isSubmitting || !newAllergy.trim()}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Allergy
+                  Ajouter allergie
                 </Button>
               </DialogFooter>
             </form>
@@ -108,16 +113,23 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
       </CardHeader>
       <CardContent>
         {allergies.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No known allergies.</p>
+          <p className="text-sm text-muted-foreground">Aucune allergie connue.</p>
         ) : (
           <ScrollArea className="h-40">
             <ul className="space-y-2">
               {allergies.map((allergy) => (
                 <li key={allergy.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-md hover:bg-muted/60 transition-colors">
                   <span className="text-sm">{allergy.description}</span>
-                  <Button variant="ghost" size="icon" onClick={() => handleRemoveAllergy(allergy.id)} disabled={isSubmitting} className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => handleRemoveAllergy(allergy.id)} 
+                    disabled={isSubmitting} 
+                    className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                    title="Supprimer l'allergie"
+                  >
                     <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Remove allergy</span>
+                    <span className="sr-only">Supprimer l'allergie {allergy.description}</span>
                   </Button>
                 </li>
               ))}

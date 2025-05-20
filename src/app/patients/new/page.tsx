@@ -23,15 +23,15 @@ export default function NewPatientPage() {
 
     if (result?.success && result.patientId) {
       toast({
-        title: "Success!",
-        description: result.message || "Patient created successfully.",
+        title: "Succès !",
+        description: result.message || "Patient créé avec succès.",
       });
       router.push(`/patients/${result.patientId}`);
     } else {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: result?.message || "Failed to create patient.",
+        title: "Erreur",
+        description: result?.message || "Échec de la création du patient.",
       });
     }
   };
@@ -41,14 +41,14 @@ export default function NewPatientPage() {
        <Button variant="outline" size="sm" asChild>
           <Link href="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
+            Retour au tableau de bord
           </Link>
         </Button>
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Add New Patient</CardTitle>
+          <CardTitle className="text-2xl">Ajouter un nouveau patient</CardTitle>
           <CardDescription>
-            Fill in the details below to create a new patient record.
+            Remplissez les détails ci-dessous pour créer un nouveau dossier patient.
           </CardDescription>
         </CardHeader>
         <CardContent>

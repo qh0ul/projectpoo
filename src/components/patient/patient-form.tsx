@@ -29,11 +29,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Import French locale
 
 const PatientFormSchema = z.object({
-  nom: z.string().min(2, { message: "Last name must be at least 2 characters." }),
-  prenom: z.string().min(2, { message: "First name must be at least 2 characters." }),
-  dateDeNaissance: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format."}),
+  nom: z.string().min(2, { message: "Le nom de famille doit comporter au moins 2 caractères." }),
+  prenom: z.string().min(2, { message: "Le prénom doit comporter au moins 2 caractères." }),
+  dateDeNaissance: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Format de date invalide."}),
   groupeSanguin: z.enum(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', '']).optional(),
   notes: z.string().optional(),
 });
@@ -42,7 +43,7 @@ type PatientFormValues = z.infer<typeof PatientFormSchema>;
 
 interface PatientFormProps {
   patient?: Patient;
-  onSubmit: (data: PatientFormData) => Promise<any>; // Can return validation errors or success message
+  onSubmit: (data: PatientFormData) => Promise<any>;
   isSubmitting: boolean;
 }
 
@@ -71,7 +72,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
   const handleFormSubmit = async (values: PatientFormValues) => {
     const dataToSubmit: PatientFormData = {
       ...values,
-      dateDeNaissance: values.dateDeNaissance, // Already a string 'yyyy-MM-dd'
+      dateDeNaissance: values.dateDeNaissance,
       groupeSanguin: values.groupeSanguin as BloodGroup || '',
     };
     await onSubmit(dataToSubmit);
@@ -86,9 +87,9 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="prenom"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name</FormLabel>
+                <FormLabel>Prénom</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter first name" {...field} />
+                  <Input placeholder="Entrez le prénom" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -99,9 +100,9 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="nom"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name</FormLabel>
+                <FormLabel>Nom de famille</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter last name" {...field} />
+                  <Input placeholder="Entrez le nom de famille" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -112,7 +113,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="dateDeNaissance"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Date of Birth</FormLabel>
+                <FormLabel>Date de Naissance</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -124,9 +125,9 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                         )}
                       >
                         {field.value ? (
-                          format(parseISO(field.value), "PPP")
+                          format(parseISO(field.value), "PPP", { locale: fr })
                         ) : (
-                          <span>Pick a date</span>
+                          <span>Choisir une date</span>
                         )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
@@ -141,6 +142,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
                         date > new Date() || date < new Date("1900-01-01")
                       }
                       initialFocus
+                      locale={fr} // Add locale to Calendar
                     />
                   </PopoverContent>
                 </Popover>
@@ -153,11 +155,11 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
             name="groupeSanguin"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Blood Group</FormLabel>
+                <FormLabel>Groupe Sanguin</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select blood group" />
+                      <SelectValue placeholder="Sélectionner le groupe sanguin" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -178,16 +180,16 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
           name="notes"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>General Notes</FormLabel>
+              <FormLabel>Notes Générales</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Enter any relevant notes about the patient"
+                  placeholder="Entrez toute note pertinente concernant le patient"
                   className="resize-y min-h-[100px]"
                   {...field}
                 />
               </FormControl>
               <FormDescription>
-                These notes are for general information and follow-up.
+                Ces notes sont destinées aux informations générales et au suivi.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -199,7 +201,7 @@ export function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProp
           ) : (
             <Save className="mr-2 h-4 w-4" />
           )}
-          {patient ? "Save Changes" : "Create Patient"}
+          {patient ? "Enregistrer les modifications" : "Créer le patient"}
         </Button>
       </form>
     </Form>

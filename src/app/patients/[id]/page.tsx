@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, Siren, History, StickyNote, Sparkles } from "lucide-react";
 import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Import French locale
 import { AllergiesSection } from "@/components/patient/allergies-section";
 import { MedicalHistorySection } from "@/components/patient/medical-history-section";
 import { HealthSummaryGenerator } from "@/components/patient/health-summary-generator";
@@ -14,9 +15,9 @@ import Image from "next/image";
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const patient = await getPatientById(params.id);
   if (!patient) {
-    return { title: "Patient Not Found" };
+    return { title: "Patient non trouvé" };
   }
-  return { title: `${patient.prenom} ${patient.nom} - Health Record` };
+  return { title: `${patient.prenom} ${patient.nom} - Dossier Médical` };
 }
 
 export default async function PatientDetailPage({ params }: { params: { id: string } }) {
@@ -35,7 +36,7 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           <Button variant="outline" size="sm" asChild className="mb-4">
             <Link href="/dashboard">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
+              Retour au tableau de bord
             </Link>
           </Button>
           <h1 className="text-3xl font-bold tracking-tight flex items-center">
@@ -43,18 +44,18 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
             {patient.prenom} {patient.nom}
           </h1>
           <p className="text-muted-foreground">
-            Viewing detailed health record.
+            Consultation du dossier médical détaillé.
           </p>
         </div>
         <div className="flex gap-2">
            <Button variant="outline" asChild>
             <Link href={`/print/patients/${patient.id}`} target="_blank">
-              <FileText className="mr-2 h-4 w-4" /> Export PDF
+              <FileText className="mr-2 h-4 w-4" /> Exporter en PDF
             </Link>
           </Button>
           <Button asChild>
             <Link href={`/patients/${patient.id}/edit`}>
-              <Edit className="mr-2 h-4 w-4" /> Edit Patient
+              <Edit className="mr-2 h-4 w-4" /> Modifier Patient
             </Link>
           </Button>
         </div>
@@ -66,8 +67,8 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
           <Card className="shadow-lg">
             <CardHeader className="flex flex-row items-start justify-between">
               <div>
-                <CardTitle className="text-xl">Patient Information</CardTitle>
-                <CardDescription>Basic details and contact information.</CardDescription>
+                <CardTitle className="text-xl">Informations du Patient</CardTitle>
+                <CardDescription>Détails de base et informations de contact.</CardDescription>
               </div>
                <Image 
                 data-ai-hint="profile face"
@@ -81,22 +82,22 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="font-semibold text-muted-foreground">Full Name:</span>
+                  <span className="font-semibold text-muted-foreground">Nom complet :</span>
                   <p>{patient.prenom} {patient.nom}</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-muted-foreground">Date of Birth:</span>
-                  <p>{format(parseISO(patient.dateDeNaissance), "MMMM d, yyyy")} (Age: {age})</p>
+                  <span className="font-semibold text-muted-foreground">Date de naissance :</span>
+                  <p>{format(parseISO(patient.dateDeNaissance), "d MMMM yyyy", { locale: fr })} (Âge : {age})</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-muted-foreground flex items-center"><Droplets className="mr-1 h-4 w-4 text-red-500"/>Blood Group:</span>
-                  <p>{patient.groupeSanguin || "Not specified"}</p>
+                  <span className="font-semibold text-muted-foreground flex items-center"><Droplets className="mr-1 h-4 w-4 text-red-500"/>Groupe Sanguin :</span>
+                  <p>{patient.groupeSanguin || "Non spécifié"}</p>
                 </div>
               </div>
               {patient.notes && (
                 <div>
                   <Separator className="my-3"/>
-                  <h4 className="font-semibold text-muted-foreground mb-1 flex items-center"><StickyNote className="mr-1 h-4 w-4 text-yellow-500"/>General Notes:</h4>
+                  <h4 className="font-semibold text-muted-foreground mb-1 flex items-center"><StickyNote className="mr-1 h-4 w-4 text-yellow-500"/>Notes Générales :</h4>
                   <p className="text-sm whitespace-pre-wrap bg-muted/50 p-3 rounded-md">{patient.notes}</p>
                 </div>
               )}
@@ -113,10 +114,10 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
             <CardHeader>
               <CardTitle className="text-xl flex items-center">
                 <Sparkles className="mr-2 h-5 w-5 text-accent-foreground" />
-                AI Health Summary
+                Résumé de Santé IA
               </CardTitle>
               <CardDescription>
-                Get an AI-generated summary of this patient's health record.
+                Obtenez un résumé généré par IA du dossier médical de ce patient.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -127,14 +128,14 @@ export default async function PatientDetailPage({ params }: { params: { id: stri
             <CardHeader>
               <CardTitle className="text-xl flex items-center">
                 <HeartPulse className="mr-2 h-5 w-5 text-destructive" />
-                Vitals Overview (Placeholder)
+                Aperçu des Constantes (Placeholder)
               </CardTitle>
               <CardDescription>
-                Recent vital signs and trends.
+                Signes vitaux récents et tendances.
               </CardDescription>
             </CardHeader>
             <CardContent className="h-48 flex items-center justify-center">
-               <Image src="https://placehold.co/300x150.png" alt="Vitals Chart Placeholder" width={300} height={150} />
+               <Image src="https://placehold.co/300x150.png" alt="Graphique des constantes (Placeholder)" width={300} height={150} />
             </CardContent>
           </Card>
         </div>

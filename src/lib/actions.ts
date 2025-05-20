@@ -1,3 +1,4 @@
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -11,17 +12,18 @@ import {
   addAllergyToPatient as dbAddAllergy,
   removeAllergyFromPatient as dbRemoveAllergy,
   addMedicalHistoryToPatient as dbAddMedicalHistory,
-  removeMedicalHistoryFromPatient as dbRemoveMedicalHistory
+  removeMedicalHistoryFromPatient as dbRemoveMedicalHistory,
+  calculateAge
 } from "./data";
 import type { Patient, PatientFormData, BloodGroup } from "./types";
 // Hypothetical AI flow import - replace with actual flow if available
 // import { summarizePatientDataFlow } from "@/ai/flows/patientSummary"; // Adjust path as needed
 
 const PatientFormSchema = z.object({
-  nom: z.string().min(1, "Last name is required."),
-  prenom: z.string().min(1, "First name is required."),
-  dateDeNaissance: z.string().min(1, "Date of birth is required."),
-  groupeSanguin: z.string().optional(), // zod doesn't have a direct enum for this without defining it
+  nom: z.string().min(1, "Le nom de famille est requis."),
+  prenom: z.string().min(1, "Le prénom est requis."),
+  dateDeNaissance: z.string().min(1, "La date de naissance est requise."),
+  groupeSanguin: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -31,7 +33,8 @@ export async function createPatientAction(formData: PatientFormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed. Please check the fields.",
+      message: "Validation échouée. Veuillez vérifier les champs.",
+      success: false,
     };
   }
 
@@ -47,9 +50,9 @@ export async function createPatientAction(formData: PatientFormData) {
     });
     revalidatePath("/dashboard");
     revalidatePath("/patients");
-    return { message: "Patient created successfully.", patientId: newPatient.id, success: true };
+    return { message: "Patient créé avec succès.", patientId: newPatient.id, success: true };
   } catch (error) {
-    return { message: "Failed to create patient.", success: false };
+    return { message: "Échec de la création du patient.", success: false };
   }
 }
 
@@ -59,7 +62,8 @@ export async function updatePatientAction(id: string, formData: PatientFormData)
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed. Please check the fields.",
+      message: "Validation échouée. Veuillez vérifier les champs.",
+      success: false,
     };
   }
   
@@ -77,9 +81,9 @@ export async function updatePatientAction(id: string, formData: PatientFormData)
     revalidatePath(`/patients/${id}`);
     revalidatePath(`/patients/${id}/edit`);
     revalidatePath("/patients");
-    return { message: "Patient updated successfully.", success: true };
+    return { message: "Patient mis à jour avec succès.", success: true };
   } catch (error) {
-    return { message: "Failed to update patient.", success: false };
+    return { message: "Échec de la mise à jour du patient.", success: false };
   }
 }
 
@@ -88,14 +92,21 @@ export async function deletePatientAction(id: string) {
     await dbDeletePatient(id);
     revalidatePath("/dashboard");
     revalidatePath("/patients");
+    // It's generally better to return a status rather than redirecting from an action
+    // The redirect can be handled by the component calling this action based on the result.
+    // However, to keep current behavior:
   } catch (error) {
-    return { message: "Failed to delete patient." };
+    // Consider returning an error message to be displayed
+    // For now, the redirect will happen even if deletion fails on the server,
+    // which might not be ideal.
+    return { message: "Échec de la suppression du patient.", success: false };
   }
   redirect("/dashboard");
+  // return { message: "Patient supprimé avec succès.", success: true }; // Alternative return
 }
 
 const AllergySchema = z.object({
-  description: z.string().min(1, "Allergy description cannot be empty."),
+  description: z.string().min(1, "La description de l'allergie ne peut pas être vide."),
 });
 
 export async function addAllergyAction(patientId: string, formData: FormData) {
@@ -105,16 +116,17 @@ export async function addAllergyAction(patientId: string, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "Validation échouée.",
+      success: false,
     };
   }
 
   try {
     await dbAddAllergy(patientId, validatedFields.data.description);
     revalidatePath(`/patients/${patientId}`);
-    return { message: "Allergy added successfully.", success: true };
+    return { message: "Allergie ajoutée avec succès.", success: true };
   } catch (e) {
-    return { message: "Failed to add allergy.", success: false };
+    return { message: "Échec de l'ajout de l'allergie.", success: false };
   }
 }
 
@@ -122,15 +134,15 @@ export async function removeAllergyAction(patientId: string, allergyId: string) 
     try {
         await dbRemoveAllergy(patientId, allergyId);
         revalidatePath(`/patients/${patientId}`);
-        return { message: "Allergy removed successfully.", success: true };
+        return { message: "Allergie supprimée avec succès.", success: true };
     } catch (e) {
-        return { message: "Failed to remove allergy.", success: false };
+        return { message: "Échec de la suppression de l'allergie.", success: false };
     }
 }
 
 const MedicalHistorySchema = z.object({
-  date: z.string().min(1, "Date is required."),
-  description: z.string().min(1, "Description is required."),
+  date: z.string().min(1, "La date est requise."),
+  description: z.string().min(1, "La description est requise."),
 });
 
 export async function addMedicalHistoryAction(patientId: string, formData: FormData) {
@@ -141,16 +153,17 @@ export async function addMedicalHistoryAction(patientId: string, formData: FormD
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "Validation échouée.",
+      success: false,
     };
   }
 
   try {
     await dbAddMedicalHistory(patientId, validatedFields.data);
     revalidatePath(`/patients/${patientId}`);
-    return { message: "Medical history entry added successfully.", success: true };
+    return { message: "Entrée d'antécédent médical ajoutée avec succès.", success: true };
   } catch (e) {
-    return { message: "Failed to add medical history.", success: false };
+    return { message: "Échec de l'ajout de l'antécédent médical.", success: false };
   }
 }
 
@@ -158,9 +171,9 @@ export async function removeMedicalHistoryAction(patientId: string, historyId: s
     try {
         await dbRemoveMedicalHistory(patientId, historyId);
         revalidatePath(`/patients/${patientId}`);
-        return { message: "Medical history entry removed successfully.", success: true };
+        return { message: "Entrée d'antécédent médical supprimée avec succès.", success: true };
     } catch (e) {
-        return { message: "Failed to remove medical history entry.", success: false };
+        return { message: "Échec de la suppression de l'entrée d'antécédent médical.", success: false };
     }
 }
 
@@ -168,32 +181,29 @@ export async function removeMedicalHistoryAction(patientId: string, historyId: s
 export async function generateHealthSummaryAction(patientId: string): Promise<{ summary?: string; error?: string }> {
   const patient = await dbGetPatientById(patientId);
   if (!patient) {
-    return { error: "Patient not found." };
+    return { error: "Patient non trouvé." };
   }
 
   try {
-    // IMPORTANT: This is a placeholder for the actual AI flow call.
-    // You will need to import and use your Genkit flow here.
-    // Example: const summary = await summarizePatientDataFlow(patient);
-    // The flow must be defined in src/ai/flows (e.g. src/ai/flows/patientSummary.ts)
-    // and needs to be properly configured with Genkit.
+    // IMPORTANT: Ceci est un placeholder pour l'appel réel au flux IA.
+    // Vous devrez importer et utiliser votre flux Genkit ici.
+    // Exemple : const summary = await summarizePatientDataFlow(patient);
+    // Le flux doit être défini dans src/ai/flows (par ex. src/ai/flows/patientSummary.ts)
+    // et doit être correctement configuré avec Genkit.
     
-    // For now, returning a mock summary:
-    // Ensure you have `gemini-1.5-flash-latest` or a similar model configured in your genkit setup.
-    // const { summarizePatientRecord } = await import('@/ai/flows/summarizePatientRecord'); // Ensure this path is correct
-    // const summary = await summarizePatientRecord(patient);
+    console.warn("Fonctionnalité Résumé IA : Utilisation d'un résumé fictif. Implémentez l'appel réel au flux IA dans src/lib/actions.ts");
     
-    // Mocking AI call for now as the flow is not provided by the user in the prompt.
-    // This part needs to be replaced with actual AI call from `src/ai/flows`
-    console.warn("AI Summary Feature: Using mock summary. Implement actual AI flow call in src/lib/actions.ts");
-    const mockSummary = `Summary for ${patient.prenom} ${patient.nom}:\nAge: ${new Date().getFullYear() - new Date(patient.dateDeNaissance).getFullYear()}.\nAllergies: ${patient.allergies.map(a => a.description).join(', ') || 'None'}.\nMedical History: ${patient.antecedents.map(h => `${h.description} (${h.date})`).join('; ') || 'None'}.`;
+    const patientAge = calculateAge(patient.dateDeNaissance);
+    const allergiesText = patient.allergies.length > 0 ? patient.allergies.map(a => a.description).join(', ') : 'Aucune connue';
+    const historyText = patient.antecedents.length > 0 ? patient.antecedents.map(h => `${h.description} (en ${new Date(h.date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' })})`).join('; ') : 'Aucun notable';
+
+    const mockSummary = `Résumé pour ${patient.prenom} ${patient.nom}:\nÂge : ${patientAge} ans.\nAllergies : ${allergiesText}.\nAntécédents médicaux : ${historyText}.\nNotes générales : ${patient.notes || 'Aucune note.'}`;
     
-    // Simulate AI processing time
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     return { summary: mockSummary };
   } catch (error) {
-    console.error("Error generating health summary:", error);
-    return { error: "Failed to generate health summary. " + (error instanceof Error ? error.message : String(error)) };
+    console.error("Erreur lors de la génération du résumé de santé :", error);
+    return { error: "Échec de la génération du résumé de santé. " + (error instanceof Error ? error.message : String(error)) };
   }
 }

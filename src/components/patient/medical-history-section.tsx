@@ -12,6 +12,7 @@ import type { MedicalHistoryEntry } from "@/lib/types";
 import { addMedicalHistoryAction, removeMedicalHistoryAction } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Import French locale
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -44,27 +45,31 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
     setIsSubmitting(false);
 
     if (result?.success) {
-      // Manually add for now, ideally re-fetch/revalidate
-      setHistory(prev => [{ id: `temp-${Date.now()}`, date: newEntryDate, description: newEntryDescription }, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      // Manually add for now, ideally re-fetch/revalidate or use returned entry
+      const newEntry = { id: result.newEntryId || `temp-${Date.now()}`, date: newEntryDate, description: newEntryDescription };
+      setHistory(prev => [newEntry, ...prev].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       setNewEntryDate(format(new Date(), 'yyyy-MM-dd'));
       setNewEntryDescription("");
       setIsDialogOpen(false);
-      toast({ title: "Success", description: "Medical history entry added." });
+      toast({ title: "Succès", description: result.message || "Entrée d'antécédent médical ajoutée." });
     } else {
-      toast({ variant: "destructive", title: "Error", description: result?.message || "Failed to add medical history." });
+      toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de l'ajout de l'antécédent médical." });
     }
   };
 
   const handleRemoveEntry = async (entryId: string) => {
+    const originalHistory = [...history];
+    setHistory(prev => prev.filter(h => h.id !== entryId)); // Optimistic update
+    
     setIsSubmitting(true);
     const result = await removeMedicalHistoryAction(patientId, entryId);
     setIsSubmitting(false);
 
     if (result?.success) {
-        setHistory(prev => prev.filter(h => h.id !== entryId));
-        toast({ title: "Success", description: "Medical history entry removed."});
+        toast({ title: "Succès", description: result.message || "Entrée d'antécédent médical supprimée."});
     } else {
-        toast({ variant: "destructive", title: "Error", description: result?.message || "Failed to remove entry."});
+        setHistory(originalHistory); // Revert on failure
+        toast({ variant: "destructive", title: "Erreur", description: result?.message || "Échec de la suppression de l'entrée."});
     }
   };
 
@@ -75,19 +80,19 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
         <div>
           <CardTitle className="text-xl flex items-center">
             <History className="mr-2 h-5 w-5 text-blue-500" />
-            Medical History
+            Antécédents Médicaux
           </CardTitle>
-          <CardDescription>Past illnesses, surgeries, and significant events.</CardDescription>
+          <CardDescription>Maladies passées, chirurgies et événements significatifs.</CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Entry
+              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une entrée
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Medical History Entry</DialogTitle>
+              <DialogTitle>Ajouter une entrée aux antécédents médicaux</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleAddEntry} className="space-y-4 py-4">
               <div>
@@ -102,7 +107,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {newEntryDate ? format(parseISO(newEntryDate), "PPP") : <span>Pick a date</span>}
+                        {newEntryDate ? format(parseISO(newEntryDate), "PPP", { locale: fr }) : <span>Choisir une date</span>}
                       </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -112,6 +117,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
                       onSelect={(date) => setNewEntryDate(date ? format(date, 'yyyy-MM-dd') : '')}
                       disabled={(date) => date > new Date()}
                       initialFocus
+                      locale={fr} // Add locale to Calendar
                     />
                   </PopoverContent>
                 </Popover>
@@ -122,18 +128,18 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
                   id="entry-description"
                   value={newEntryDescription}
                   onChange={(e) => setNewEntryDescription(e.target.value)}
-                  placeholder="e.g., Annual check-up, Flu vaccination"
+                  placeholder="Ex: Bilan annuel, Vaccination antigrippale"
                   className="mt-1 min-h-[80px]"
                   disabled={isSubmitting}
                 />
               </div>
               <DialogFooter>
                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button>
+                    <Button type="button" variant="outline" disabled={isSubmitting}>Annuler</Button>
                  </DialogClose>
                 <Button type="submit" disabled={isSubmitting || !newEntryDescription.trim() || !newEntryDate}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Add Entry
+                  Ajouter entrée
                 </Button>
               </DialogFooter>
             </form>
@@ -142,7 +148,7 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
       </CardHeader>
       <CardContent>
         {history.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No medical history recorded.</p>
+          <p className="text-sm text-muted-foreground">Aucun antécédent médical enregistré.</p>
         ) : (
           <ScrollArea className="h-60">
             <ul className="space-y-3">
@@ -150,13 +156,20 @@ export function MedicalHistorySection({ patientId, medicalHistory: initialHistor
                 <li key={entry.id} className="p-3 bg-muted/30 rounded-md hover:bg-muted/60 transition-colors">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-semibold">{entry.description}</p>
-                     <Button variant="ghost" size="icon" onClick={() => handleRemoveEntry(entry.id)} disabled={isSubmitting} className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive">
+                     <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleRemoveEntry(entry.id)} 
+                        disabled={isSubmitting} 
+                        className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                        title="Supprimer l'entrée"
+                      >
                         <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Remove entry</span>
+                        <span className="sr-only">Supprimer l'entrée {entry.description}</span>
                       </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {format(parseISO(entry.date), "MMMM d, yyyy")}
+                    {format(parseISO(entry.date), "d MMMM yyyy", { locale: fr })}
                   </p>
                 </li>
               ))}

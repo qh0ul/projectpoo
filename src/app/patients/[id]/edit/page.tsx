@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // useEffect was missing from original template
 import Link from "next/link";
 import { useRouter, notFound } from "next/navigation";
 import { PatientForm } from "@/components/patient/patient-form";
@@ -19,17 +19,20 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useState(() => {
+  // Changed useState to useEffect for data fetching as per React best practices
+  useEffect(() => {
     async function fetchPatient() {
+      setIsLoading(true);
       const fetchedPatient = await getPatientById(params.id);
       if (!fetchedPatient) {
         notFound();
+      } else {
+        setPatient(fetchedPatient);
       }
-      setPatient(fetchedPatient);
       setIsLoading(false);
     }
     fetchPatient();
-  });
+  }, [params.id]);
 
   const handleSubmit = async (data: PatientFormData) => {
     if (!patient) return;
@@ -39,15 +42,15 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
 
     if (result?.success) {
       toast({
-        title: "Success!",
-        description: result.message || "Patient updated successfully.",
+        title: "Succès !",
+        description: result.message || "Patient mis à jour avec succès.",
       });
       router.push(`/patients/${patient.id}`);
     } else {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: result?.message || "Failed to update patient.",
+        title: "Erreur",
+        description: result?.message || "Échec de la mise à jour du patient.",
       });
     }
   };
@@ -56,14 +59,14 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading patient data...</p>
+        <p className="ml-2">Chargement des données du patient...</p>
       </div>
     );
   }
 
   if (!patient) {
     // Should be caught by notFound in effect, but as a fallback
-    return <p>Patient not found.</p>;
+    return <p>Patient non trouvé.</p>;
   }
 
   return (
@@ -71,14 +74,14 @@ export default function EditPatientPage({ params }: { params: { id: string } }) 
       <Button variant="outline" size="sm" asChild>
         <Link href={`/patients/${params.id}`}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Patient Details
+          Retour aux détails du patient
         </Link>
       </Button>
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl">Edit Patient: {patient.prenom} {patient.nom}</CardTitle>
+          <CardTitle className="text-2xl">Modifier Patient : {patient.prenom} {patient.nom}</CardTitle>
           <CardDescription>
-            Update the patient's information below.
+            Mettez à jour les informations du patient ci-dessous.
           </CardDescription>
         </CardHeader>
         <CardContent>
