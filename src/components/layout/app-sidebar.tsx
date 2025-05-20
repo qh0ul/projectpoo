@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -17,6 +18,7 @@ import { NAV_ITEMS, APP_NAME } from "@/constants";
 import { Activity, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar as useSidebarContext } from "@/components/ui/sidebar"; // aliased import
+import { useState, useEffect } from "react"; // Added for isClient state
 
 export interface NavItem {
   href: string;
@@ -28,17 +30,25 @@ export interface NavItem {
 export function AppSidebar() {
   const pathname = usePathname();
   const { toggleSidebar, state: sidebarState } = useSidebarContext();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex items-center justify-between p-4">
         <Link href="/" className="flex items-center gap-2">
           <Activity className="h-7 w-7 text-primary" />
-          {sidebarState === "expanded" && (
+          {isClient && sidebarState === "expanded" && (
              <span className="font-semibold text-lg whitespace-nowrap">{APP_NAME}</span>
           )}
+           {!isClient && sidebarState === "expanded" && ( // Fallback for SSR or pre-hydration
+            <span className="font-semibold text-lg whitespace-nowrap invisible">{APP_NAME}</span>
+          )}
         </Link>
-        {sidebarState === "expanded" && (
+        {isClient && sidebarState === "expanded" && (
           <Button variant="ghost" size="icon" className="md:hidden" onClick={toggleSidebar} title="Ouvrir/Fermer le menu latéral">
             <PanelLeft />
             <span className="sr-only">Ouvrir/Fermer le menu latéral</span>
