@@ -1,3 +1,4 @@
+
 import type { NavItem } from "@/components/layout/app-sidebar";
 import type { BloodGroup } from "@/lib/types";
 import { LayoutDashboard, UserPlus, Users } from "lucide-react";
@@ -34,3 +35,6 @@ export const BLOOD_GROUPS_OPTIONS: { value: Exclude<BloodGroup, ''>; label: stri
   { value: 'O+', label: 'O+' },
   { value: 'O-', label: 'O-' },
 ];
+
+// Type for blood group options excluding the empty value, useful for forms
+export type BloodGroupSelectOption = typeof BLOOD_GROUPS_OPTIONS[number]['value'];
