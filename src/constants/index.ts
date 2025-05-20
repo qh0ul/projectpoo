@@ -2,7 +2,7 @@ import type { NavItem } from "@/components/layout/app-sidebar";
 import type { BloodGroup } from "@/lib/types";
 import { LayoutDashboard, UserPlus, Users } from "lucide-react";
 
-export const APP_NAME = "Mon carnet de santé";
+export const APP_NAME = "'Mon Carnet de Santé'";
 
 export const NAV_ITEMS: NavItem[] = [
   {
