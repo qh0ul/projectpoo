@@ -1,34 +1,24 @@
 
-"use client"; // Required for hooks like useState, useEffect, useAuth
+"use client"; 
 
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation"; // useRouter for redirection
+import { notFound, useRouter } from "next/navigation"; 
 import { getPatientById, calculateAge } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, Siren, History, StickyNote, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Edit, FileText, UserCircle, HeartPulse, Droplets, StickyNote, Sparkles, Loader2 } from "lucide-react"; // Removed Siren, History
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { AllergiesSection } from "@/components/patient/allergies-section";
 import { MedicalHistorySection } from "@/components/patient/medical-history-section";
 import { HealthSummaryGenerator } from "@/components/patient/health-summary-generator";
 import Image from "next/image";
-import { useAuth } from "@/contexts/AuthContext"; // Import useAuth
-import { useEffect, useState } from "react"; // Import useEffect and useState
-import type { Patient } from "@/lib/types"; // Import Patient type
+import { useAuth } from "@/contexts/AuthContext"; 
+import { useEffect, useState } from "react"; 
+import type { Patient } from "@/lib/types"; 
 import { useToast } from "@/hooks/use-toast";
 
-
-// Metadata generation is typically for Server Components. 
-// For client components, document title can be set using `document.title` in useEffect.
-// export async function generateMetadata({ params }: { params: { id: string } }) {
-//   const patient = await getPatientById(params.id);
-//   if (!patient) {
-//     return { title: "Patient non trouvé" };
-//   }
-//   return { title: `${patient.prenom} ${patient.nom} - Dossier Médical` };
-// }
 
 export default function PatientDetailPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -41,31 +31,42 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     async function fetchPatientDetails() {
       setIsLoading(true);
       const fetchedPatient = await getPatientById(params.id);
+      
       if (!fetchedPatient) {
-        notFound();
+        toast({
+            variant: "destructive",
+            title: "Patient non trouvé",
+            description: "Le dossier patient demandé n'existe pas ou plus.",
+         });
+        notFound(); // Or router.push('/patients') or router.push('/dashboard')
         return;
       }
 
       // Authorization:
-      // If user is a patient, they can only see their own record.
+      // If user is a patient, they can only see their own record (user.id must match patient.id).
       // If user is a doctor, they can see any patient record.
-      if (user?.role === 'patient' && user.id !== fetchedPatient.id && MOCK_USERS.find(u => u.email === user.email)?.id !== fetchedPatient.id ) {
+      if (user?.role === 'patient' && user.id !== fetchedPatient.id ) {
          toast({
             variant: "destructive",
             title: "Accès non autorisé",
             description: "Vous ne pouvez consulter que votre propre dossier médical.",
          });
-        router.push('/dashboard');
+        router.push('/dashboard'); // Redirect to their dashboard
         return;
       }
       
       setPatient(fetchedPatient);
-      document.title = `${fetchedPatient.prenom} ${fetchedPatient.nom} - Dossier Médical`; // Set document title
+      if (typeof document !== 'undefined') {
+        document.title = `${fetchedPatient.prenom} ${fetchedPatient.nom} - Dossier Médical`; 
+      }
       setIsLoading(false);
     }
 
     if (user) { // Ensure user context is loaded
         fetchPatientDetails();
+    } else {
+      // If user is not loaded yet, wait or handle (could show a general loader)
+      // For now, if no user, it might try to fetch and fail auth check, then redirect.
     }
   }, [params.id, user, router, toast]);
 
@@ -80,6 +81,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
   }
 
   const age = calculateAge(patient.dateDeNaissance);
+  const canEdit = user?.role === 'medecin' || user?.id === patient.id; // Doctors or the patient themselves can edit notes/allergies
 
   return (
     <div className="space-y-8">
@@ -96,7 +98,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
             {patient.prenom} {patient.nom}
           </h1>
           <p className="text-muted-foreground mt-1">
-            Consultation du dossier médical détaillé.
+            Dossier médical détaillé.
           </p>
         </div>
         <div className="flex gap-2">
@@ -105,7 +107,7 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
               <FileText className="mr-2 h-4 w-4" /> Exporter en PDF
             </Link>
           </Button>
-          {user?.role === 'medecin' && (
+          {user?.role === 'medecin' && ( // Only doctors can edit core patient info
             <Button asChild className="shadow-sm hover:shadow-md transition-shadow">
               <Link href={`/patients/${patient.id}/edit`}>
                 <Edit className="mr-2 h-4 w-4" /> Modifier Patient
@@ -140,13 +142,12 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
                 </div>
                 <div>
                   <span className="font-semibold text-muted-foreground">Date de naissance :</span>
-                  <p className="text-foreground font-medium">{format(parseISO(patient.dateDeNaissance), "d MMMM yyyy", { locale: fr })} (Âge : {age})</p>
+                  <p className="text-foreground font-medium">{patient.dateDeNaissance ? format(parseISO(patient.dateDeNaissance), "d MMMM yyyy", { locale: fr }) : 'N/A'} (Âge : {age})</p>
                 </div>
                 <div>
                   <span className="font-semibold text-muted-foreground flex items-center"><Droplets className="mr-1 h-4 w-4 text-red-600"/>Groupe Sanguin :</span>
                   <p className="text-foreground font-medium">{patient.groupeSanguin || "Non spécifié"}</p>
                 </div>
-                 {/* Add more fields if needed, e.g., contact */}
               </div>
               {patient.notes && (
                 <div>
@@ -158,25 +159,27 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
             </CardContent>
           </Card>
 
-          <AllergiesSection patientId={patient.id} allergies={patient.allergies} />
-          <MedicalHistorySection patientId={patient.id} medicalHistory={patient.antecedents} />
+          <AllergiesSection patientId={patient.id} allergies={patient.allergies} canEdit={canEdit} />
+          <MedicalHistorySection patientId={patient.id} medicalHistory={patient.antecedents} canEdit={user?.role === 'medecin'} /> 
         </div>
 
         <div className="lg:col-span-1 space-y-6">
-          <Card className="shadow-xl border border-border">
-            <CardHeader>
-              <CardTitle className="text-xl flex items-center">
-                <Sparkles className="mr-2 h-5 w-5 text-accent" />
-                Résumé de Santé IA
-              </CardTitle>
-              <CardDescription>
-                Obtenez un résumé généré par IA du dossier médical de ce patient.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <HealthSummaryGenerator patientId={patient.id} />
-            </CardContent>
-          </Card>
+          {user?.role === 'medecin' && ( // AI Summary only for doctors for now
+            <Card className="shadow-xl border border-border">
+                <CardHeader>
+                <CardTitle className="text-xl flex items-center">
+                    <Sparkles className="mr-2 h-5 w-5 text-accent" />
+                    Résumé de Santé IA
+                </CardTitle>
+                <CardDescription>
+                    Obtenez un résumé généré par IA du dossier médical de ce patient.
+                </CardDescription>
+                </CardHeader>
+                <CardContent>
+                <HealthSummaryGenerator patientId={patient.id} />
+                </CardContent>
+            </Card>
+          )}
            <Card className="shadow-xl border border-border" data-ai-hint="medical chart">
             <CardHeader>
               <CardTitle className="text-xl flex items-center">
@@ -196,10 +199,3 @@ export default function PatientDetailPage({ params }: { params: { id: string } }
     </div>
   );
 }
-
-// Included for client-side role check logic if needed, ensure it's consistent with AuthContext
-const MOCK_USERS = [
-  { id: 'doc1', email: 'medecin@santeoctet.app', role: 'medecin', nom: 'Dr. Traore' },
-  { id: 'pat1', email: 'patient@santeoctet.app', role: 'patient', nom: 'Amina Zineb' },
-  { id: 'pat2', email: 'karim.b@example.com', role: 'patient', nom: 'Karim Benjelloun'},
-];

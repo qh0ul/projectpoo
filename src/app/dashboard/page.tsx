@@ -1,8 +1,8 @@
 
-"use client"; // Required for hooks like useState, useEffect, useAuth
+"use client"; 
 
 import Link from "next/link";
-import { PlusCircle, Users, TrendingUp, FileText, UserCog } from "lucide-react";
+import { PlusCircle, Users, FileText, UserCog, UserCircle as UserCircleIcon } from "lucide-react"; // Renamed UserCircle to avoid conflict
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { getPatients, calculateAge } from "@/lib/data"; 
@@ -12,11 +12,6 @@ import Image from "next/image";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 
-// metadata can remain static or be removed if not needed for client component
-// export const metadata = {
-//   title: "Tableau de bord",
-// };
-
 export default function DashboardPage() {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -24,19 +19,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function loadPatients() {
-      setIsLoadingPatients(true);
-      const fetchedPatients = await getPatients();
-      setPatients(fetchedPatients);
-      setIsLoadingPatients(false);
+      if (user?.role === 'medecin') { // Only load patients if user is a doctor
+        setIsLoadingPatients(true);
+        const fetchedPatients = await getPatients();
+        setPatients(fetchedPatients);
+        setIsLoadingPatients(false);
+      } else {
+        setIsLoadingPatients(false); // Not a doctor, no patients to load for this view
+      }
     }
-    if (user) { // Only load if user is authenticated
+    if (user) { 
       loadPatients();
     }
   }, [user]);
 
   const welcomeMessage = user?.role === 'medecin' 
     ? `Bienvenue Dr. ${user.nom || user.email.split('@')[0]}, gérez vos patients efficacement.`
-    : `Bienvenue ${user?.nom || user?.email.split('@')[0]}, consultez vos informations de santé.`;
+    : `Bienvenue ${user?.prenom || user?.email.split('@')[0]}, consultez vos informations de santé.`;
 
   return (
     <div className="space-y-8">
@@ -58,31 +57,37 @@ export default function DashboardPage() {
 
       {/* Quick Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {user?.role === 'medecin' && (
+          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Patients</CardTitle>
+              <Users className="h-5 w-5 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{isLoadingPatients ? "..." : patients.length}</div>
+              <p className="text-xs text-muted-foreground">
+                Patients enregistrés dans le système.
+              </p>
+            </CardContent>
+          </Card>
+        )}
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Patients</CardTitle>
-            <Users className="h-5 w-5 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{isLoadingPatients ? "..." : patients.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {user?.role === 'medecin' ? "Patients enregistrés dans le système." : "Votre dossier est actif."}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Rapports Récents</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {user?.role === 'medecin' ? "Rapports Récents" : "Mes Documents"}
+            </CardTitle>
             <FileText className="h-5 w-5 text-accent" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div> {/* Placeholder */}
             <p className="text-xs text-muted-foreground">
-              Nouveaux rapports ou analyses disponibles.
+              {user?.role === 'medecin' ? "Nouveaux rapports ou analyses." : "Documents et ordonnances."}
             </p>
           </CardContent>
            <CardFooter>
-            <Button variant="outline" size="sm" className="w-full">Voir les rapports</Button>
+            <Button variant="outline" size="sm" className="w-full" disabled>
+                {user?.role === 'medecin' ? "Voir les rapports" : "Consulter (bientôt)"}
+            </Button>
           </CardFooter>
         </Card>
          <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -91,13 +96,13 @@ export default function DashboardPage() {
             <UserCog className="h-5 w-5 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-semibold">{user?.nom || user?.email}</div>
+            <div className="text-lg font-semibold">{user?.prenom} {user?.nom || user?.email.split('@')[0]}</div>
              <p className="text-xs text-muted-foreground capitalize">
               Rôle : {user?.role}
             </p>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" size="sm" className="w-full">Gérer le compte</Button>
+            <Button variant="outline" size="sm" className="w-full" disabled>Gérer le compte (bientôt)</Button>
           </CardFooter>
         </Card>
       </div>
@@ -133,7 +138,7 @@ export default function DashboardPage() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {patients.slice(0,3).map((patient: Patient) => ( // Display first 3 for quick access
+              {patients.slice(0,3).map((patient: Patient) => ( 
                 <Card key={patient.id} className="flex flex-col shadow-lg hover:shadow-xl transition-shadow duration-300 border border-border">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -178,17 +183,16 @@ export default function DashboardPage() {
          <Card className="w-full py-8 shadow-lg border border-border">
           <CardHeader>
             <CardTitle className="text-xl text-primary">Mon Dossier Médical</CardTitle>
-            <CardDescription>Accédez aux informations de votre dossier médical.</CardDescription>
+            <CardDescription>Accédez aux informations de votre dossier médical personnel.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center text-center space-y-4">
-            <UserCircle className="h-16 w-16 text-primary" />
-            <h3 className="text-lg font-semibold">Bonjour, {user.nom || user.email.split('@')[0]} !</h3>
+            <UserCircleIcon className="h-16 w-16 text-primary" /> {/* Changed to UserCircleIcon */}
+            <h3 className="text-lg font-semibold">Bonjour, {user.prenom || user.email.split('@')[0]} !</h3>
             <p className="text-muted-foreground">
-              Vous pouvez consulter votre dossier personnel ici.
+              Vous pouvez consulter votre dossier personnel et gérer vos informations ici.
             </p>
-             {/* Assuming patient 'pat1' from mock data is the logged in patient */}
             <Button asChild className="mt-4">
-              <Link href={`/patients/${MOCK_USERS.find(u => u.email === user.email)?.id || 'pat1'}`}> 
+              <Link href={`/patients/${user.id}`}> 
                 Voir mon dossier
               </Link>
             </Button>
@@ -198,9 +202,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-// Mock user data to find patient ID for patient role
-const MOCK_USERS = [
-  { id: 'doc1', email: 'medecin@santeoctet.app', role: 'medecin', nom: 'Dr. Traore' },
-  { id: 'pat1', email: 'patient@santeoctet.app', role: 'patient', nom: 'Amina Zineb' },
-  { id: 'pat2', email: 'karim.b@example.com', role: 'patient', nom: 'Karim Benjelloun'},
-];

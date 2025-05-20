@@ -16,9 +16,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface AllergiesSectionProps {
   patientId: string;
   allergies: Allergy[];
+  canEdit?: boolean; // Added prop to control editability
 }
 
-export function AllergiesSection({ patientId, allergies: initialAllergies }: AllergiesSectionProps) {
+export function AllergiesSection({ patientId, allergies: initialAllergies, canEdit = false }: AllergiesSectionProps) {
   const [allergies, setAllergies] = useState<Allergy[]>(initialAllergies);
   const [newAllergy, setNewAllergy] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +28,7 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
 
   const handleAddAllergy = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAllergy.trim()) return;
+    if (!newAllergy.trim() || !canEdit) return;
 
     setIsSubmitting(true);
     const formData = new FormData();
@@ -47,12 +48,16 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
   };
 
   const handleRemoveAllergy = async (allergyId: string) => {
+    if (!canEdit) return;
     const originalAllergies = [...allergies];
     setAllergies(prev => prev.filter(a => a.id !== allergyId)); 
     
-    setIsSubmitting(true); // Consider per-item loading for multiple quick removals
+    // Consider per-item loading for multiple quick removals if isSubmitting is global
+    const currentlyRemovingId = allergyId; // Temporary state for specific item loading
+    setIsSubmitting(true); 
     const result = await removeAllergyAction(patientId, allergyId);
     setIsSubmitting(false);
+
 
     if (result?.success) {
         toast({ title: "Succès", description: result.message || "Allergie supprimée."});
@@ -72,41 +77,43 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
           </CardTitle>
           <CardDescription>Liste des allergies et réactions connues.</CardDescription>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une allergie
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Ajouter une nouvelle allergie</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleAddAllergy} className="space-y-4 py-4">
-              <div>
-                <Label htmlFor="allergy-description" className="sr-only">
-                  Description de l'allergie
-                </Label>
-                <Input
-                  id="allergy-description"
-                  value={newAllergy}
-                  onChange={(e) => setNewAllergy(e.target.value)}
-                  placeholder="Ex: Pénicilline, Arachides"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                   <Button type="button" variant="outline" disabled={isSubmitting}>Annuler</Button>
-                </DialogClose>
-                <Button type="submit" disabled={isSubmitting || !newAllergy.trim()}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Ajouter allergie
+        {canEdit && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                <PlusCircle className="mr-2 h-4 w-4" /> Ajouter une allergie
                 </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                <DialogTitle>Ajouter une nouvelle allergie</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={handleAddAllergy} className="space-y-4 py-4">
+                <div>
+                    <Label htmlFor="allergy-description" className="sr-only">
+                    Description de l'allergie
+                    </Label>
+                    <Input
+                    id="allergy-description"
+                    value={newAllergy}
+                    onChange={(e) => setNewAllergy(e.target.value)}
+                    placeholder="Ex: Pénicilline, Arachides"
+                    disabled={isSubmitting}
+                    />
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                    <Button type="button" variant="outline" disabled={isSubmitting}>Annuler</Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting || !newAllergy.trim()}>
+                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Ajouter allergie
+                    </Button>
+                </DialogFooter>
+                </form>
+            </DialogContent>
+            </Dialog>
+        )}
       </CardHeader>
       <CardContent>
         {allergies.length === 0 ? (
@@ -117,17 +124,19 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
               {allergies.map((allergy) => (
                 <li key={allergy.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-md hover:bg-muted/60 transition-colors">
                   <span className="text-sm">{allergy.description}</span>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => handleRemoveAllergy(allergy.id)} 
-                    disabled={isSubmitting} 
-                    className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive"
-                    title="Supprimer l'allergie"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Supprimer l'allergie {allergy.description}</span>
-                  </Button>
+                  {canEdit && (
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleRemoveAllergy(allergy.id)} 
+                        disabled={isSubmitting} 
+                        className="h-7 w-7 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                        title="Supprimer l'allergie"
+                    >
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        <span className="sr-only">Supprimer l'allergie {allergy.description}</span>
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -137,4 +146,3 @@ export function AllergiesSection({ patientId, allergies: initialAllergies }: All
     </Card>
   );
 }
-

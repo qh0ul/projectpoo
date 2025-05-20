@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { LogIn, AlertCircle, Loader2, Activity } from 'lucide-react';
+import { LogIn, AlertCircle, Loader2, Activity, UserPlus } from 'lucide-react';
 import { APP_NAME } from '@/constants';
 import Link from 'next/link';
 
@@ -90,16 +90,27 @@ export default function LoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col items-center text-sm">
-            <p className="text-muted-foreground">
-              Identifiants de démonstration :
+            <div className="text-center">
+                <p className="text-muted-foreground">
+                Pas encore de compte patient ?
+                </p>
+                <Button variant="link" asChild className="text-primary px-0">
+                    <Link href="/register/patient">
+                        <UserPlus className="mr-2 h-4 w-4" /> Créer un compte patient
+                    </Link>
+                </Button>
+            </div>
+            <hr className="w-full border-t my-4" />
+            <p className="text-muted-foreground mt-2">
+              Identifiants de démonstration (Médecin) :
             </p>
             <ul className="list-disc list-inside text-muted-foreground mt-1 text-xs">
-              <li>Médecin: medecin@santeoctet.app / password123</li>
-              <li>Patient: patient@santeoctet.app / password123</li>
+              <li>Email: medecin@santeoctet.app</li>
+              <li>Mot de passe: GynecoSecure22#</li>
             </ul>
-          <p className="mt-4 text-muted-foreground">
-            Pas encore de compte ? <Link href="#" className="text-primary hover:underline">S'inscrire (bientôt disponible)</Link>
-          </p>
+             <p className="text-muted-foreground mt-2">
+              (Autres identifiants disponibles dans le code source)
+            </p>
         </CardFooter>
       </Card>
        <p className="mt-8 text-xs text-center text-muted-foreground">

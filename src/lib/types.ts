@@ -14,7 +14,7 @@ export interface MedicalHistoryEntry {
 }
 
 export interface Patient {
-  id: string;
+  id: string; // This ID should match the User ID if the patient is also a user
   nom: string;
   prenom: string;
   dateDeNaissance: string; // ISO date string yyyy-MM-dd
@@ -24,12 +24,12 @@ export interface Patient {
   notes?: string;
 }
 
-// For patient creation/update forms
+// For patient creation/update forms by doctors
 export interface PatientFormData {
+  id?: string; // Optional: Used when creating patient record for registered user
   nom: string;
   prenom: string;
   dateDeNaissance: string; // Should be validated as yyyy-MM-dd
   groupeSanguin: BloodGroupSelectOption; // Matches what the Select component uses
   notes?: string;
 }
-
